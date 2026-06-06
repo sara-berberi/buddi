@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { TabView } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import FeedScreen from '../../components/screens/FeedScreen';
 import DailyScreen from '../../components/screens/DailyScreen';
 import GardenScreen from '../../components/screens/GardenScreen';
 import TonightScreen from '../../components/screens/TonightScreen';
@@ -9,16 +10,18 @@ import ProfileScreen from '../../components/screens/ProfileScreen';
 import { colors, fonts } from '../../lib/constants';
 import { TAB_BAR_HEIGHT } from '../../components/nav/tabBarMetrics';
 
-type RouteKey = 'daily' | 'garden' | 'tonight' | 'profile';
+type RouteKey = 'feed' | 'daily' | 'garden' | 'tonight' | 'profile';
 
 const ROUTES: { key: RouteKey; title: string; glyph: string; center?: boolean }[] = [
+  { key: 'feed', title: 'Feed', glyph: '🏠' },
   { key: 'daily', title: 'Daily', glyph: '✶' },
-  { key: 'garden', title: 'Garden', glyph: '🌿' },
   { key: 'tonight', title: 'Tonight', glyph: '✦', center: true },
+  { key: 'garden', title: 'Garden', glyph: '🌿' },
   { key: 'profile', title: 'Profile', glyph: '◍' },
 ];
 
 const SCENES: Record<RouteKey, React.ComponentType> = {
+  feed: FeedScreen,
   daily: DailyScreen,
   garden: GardenScreen,
   tonight: TonightScreen,

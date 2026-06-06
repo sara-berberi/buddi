@@ -17,6 +17,7 @@ const repoRoot = resolve(__dirname, '../../../'); // backend/src/db -> repo root
 const SCHEMA_FILES = [
   ['Schema', '1.1.0', 'create_tables.sql'],
   ['Schema', '1.2.0', 'alter_tables.sql'],
+  ['Schema', '1.3.0', 'create_tables.sql'],
 ];
 const SEED_FILES = [['Dati', '1.1.0', 'seed.sql']];
 

@@ -87,7 +87,7 @@ export default function FriendshipDetail() {
         <Text style={styles.empty}>No quest ideas right now.</Text>
       ) : (
         questData.quests.map((q) => (
-          <QuestCard key={q.venue.id} quest={q} onPress={() => router.push(`/quest/${q.venue.id}`)} />
+          <QuestCard key={q.venue.id} quest={q} onPress={() => router.push(`/quest/${q.venue.id}?friend=${f.friend.id}`)} />
         ))
       )}
 

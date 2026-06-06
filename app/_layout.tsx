@@ -63,6 +63,9 @@ export default function RootLayout() {
             <Stack.Screen name="quest/[id]" options={{ headerShown: true, title: '' }} />
             <Stack.Screen name="people" options={{ headerShown: true, title: 'People' }} />
             <Stack.Screen name="avatar" options={{ headerShown: true, title: 'Edit avatar', presentation: 'modal' }} />
+            <Stack.Screen name="dm/index" options={{ headerShown: true, title: 'Messages' }} />
+            <Stack.Screen name="dm/[id]" options={{ headerShown: true, title: 'Chat' }} />
+            <Stack.Screen name="post/[id]" options={{ headerShown: true, title: 'Post' }} />
           </Stack>
         </AuthGate>
       </SafeAreaProvider>

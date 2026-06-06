@@ -1,17 +1,35 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVenueQuest } from '../../hooks/useQuests';
+import { useFriendships } from '../../hooks/useFriendships';
+import { api } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { Avatar } from '../../components/ui/Avatar';
+import { BlobMascot } from '../../components/brand/BlobMascot';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { CATEGORY_LABEL } from '../../lib/utils';
 
 export default function QuestDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // `friend` is passed when arriving from a friendship's quest cards.
+  const { id, friend } = useLocalSearchParams<{ id: string; friend?: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { data, isLoading, refetch, isRefetching } = useVenueQuest(id!);
+  const friends = useFriendships();
+  const [picking, setPicking] = useState(false);
+  const [going, setGoing] = useState(false);
 
   if (isLoading || !data) {
     return (
@@ -22,6 +40,26 @@ export default function QuestDetail() {
   }
 
   const { venue, suggestedTime, topics } = data.quest;
+
+  // The actual "Let's go": accept the quest + open the DM with the venue card.
+  async function go(friendId: string) {
+    setPicking(false);
+    setGoing(true);
+    try {
+      const { threadId } = await api.letsGo(venue.id, friendId);
+      router.replace(`/dm/${threadId}?venue=${venue.id}`);
+    } finally {
+      setGoing(false);
+    }
+  }
+
+  function onLetsGo() {
+    if (friend) {
+      go(String(friend));
+    } else {
+      setPicking(true); // ask which friend to plan with
+    }
+  }
 
   return (
     <ScrollView
@@ -54,7 +92,7 @@ export default function QuestDetail() {
       ))}
 
       <View style={styles.actions}>
-        <Button label="Let’s go" variant="accent" onPress={() => router.back()} />
+        <Button label="Let’s go" variant="accent" loading={going} onPress={onLetsGo} />
         <Button
           label="Show another"
           variant="ghost"
@@ -63,6 +101,31 @@ export default function QuestDetail() {
           style={{ marginTop: spacing.sm }}
         />
       </View>
+
+      {/* Friend picker when arriving without a friend context (Tonight tab) */}
+      <Modal visible={picking} transparent animationType="slide" onRequestClose={() => setPicking(false)}>
+        <Pressable style={styles.backdrop} onPress={() => setPicking(false)}>
+          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.sheetHead}>
+              <BlobMascot size={40} mood="excited" />
+              <Text style={styles.sheetTitle}>Who are you going with?</Text>
+            </View>
+            <ScrollView style={{ maxHeight: 360 }}>
+              {!friends.data?.length ? (
+                <Text style={styles.sheetEmpty}>Add a friend first to plan a quest together.</Text>
+              ) : (
+                friends.data.map((f) => (
+                  <Pressable key={f.id} style={styles.friendRow} onPress={() => go(f.friend.id)}>
+                    <Avatar avatar={f.friend.avatar} size={40} />
+                    <Text style={styles.friendName}>{f.friend.displayName}</Text>
+                  </Pressable>
+                ))
+              )}
+            </ScrollView>
+            <Button label="Cancel" variant="ghost" onPress={() => setPicking(false)} style={{ marginTop: spacing.sm }} />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -100,4 +163,17 @@ const styles = StyleSheet.create({
   },
   topic: { flex: 1, fontFamily: fonts.body, fontSize: 16, color: colors.ink, lineHeight: 23 },
   actions: { marginTop: spacing.xl },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: colors.cream,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    padding: spacing.lg,
+    ...(Platform.OS === 'web' ? { maxWidth: 480, alignSelf: 'center', width: '100%' } : null),
+  },
+  sheetHead: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  sheetTitle: { fontFamily: fonts.headerItalic, fontSize: 22, color: colors.ink },
+  sheetEmpty: { fontFamily: fonts.body, fontSize: 15, color: colors.muted, paddingVertical: spacing.lg },
+  friendRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
+  friendName: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
 });

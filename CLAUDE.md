@@ -12,8 +12,13 @@ Buddi is a friendship tracker app. Three features. Nothing else.
 2. **Daily Question** — one question per day, text only, uneditable after posting. You see friends' answers only after you post yours. Like BeReal but with words, not photos.
 3. **Quests** — activity and date ideas at venues registered on the platform. Shown inside each friendship detail AND in a dedicated "Tonight" discovery tab.
 
-Buddi is not a dating app. Not a social feed. Not a matching platform.
-The matching / open mode / public feed was deliberately cut. Do not add it back.
+Buddi is not a dating app. Not a matching platform.
+The matching / open mode / stranger-meeting was deliberately cut. Do not add it back.
+
+> **Updated 2026-06-06 (DEC-P012):** Buddi now HAS a friends-only social layer —
+> text statuses, a friends' feed, like/repost/share, and DMs. This reversed the
+> original "no social feed" rule. Still friends-only and text-first (no photo
+> feed, no strangers). The Daily Question remains separate and uneditable.
 
 ---
 

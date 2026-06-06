@@ -51,6 +51,10 @@ Buddi launches free. No paywall.
 Previous names considered: Kith, Fati, Loopi, Bloomi, Tend, Ember.
 *Reason:* Simple, warm, immediately understood. Works internationally. Connects to the plant metaphor. Friendly without being childish.
 
+**DEC-P012: Social feed added — supersedes DEC-P003/4/5 "no social feed" (2026-06-06)**
+Buddi now has a friends' feed: users post text **statuses**, and friends can **like, repost, share by link, and share into a DM**. Direct messaging between friends is added. The Daily Question remains as-is (still uneditable/gated) — statuses are a separate, casual channel.
+*Reason:* Product owner decision to make Buddi feel more social/fun. This intentionally reverses the earlier "not a social feed" stance (DEC-P003/4/5). Logged explicitly so the docs stay honest. Still text-first (no photo feed yet); no stranger-matching. If this proves to undermine the authenticity the Daily Question was protecting, revisit.
+
 ---
 
 ## Technical Decisions

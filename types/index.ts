@@ -133,3 +133,57 @@ export interface QuestCard {
   suggestedTime: string;
   topics: string[];
 }
+
+// ---- Social ---------------------------------------------------------------
+export interface PostAuthor {
+  id: string;
+  username: string;
+  displayName: string;
+  avatar: AvatarConfig;
+}
+
+export interface Post {
+  id: string;
+  body: string | null;
+  createdAt: string;
+  likeCount: number;
+  repostCount: number;
+  likedByMe: boolean;
+  author: PostAuthor;
+  repostOf: {
+    id: string;
+    body: string | null;
+    createdAt: string;
+    author: PostAuthor;
+  } | null;
+}
+
+// ---- DM -------------------------------------------------------------------
+export interface DmThreadSummary {
+  id: string;
+  lastMessageAt: string | null;
+  preview: string;
+  friend: PostAuthor;
+}
+
+export type DmShare =
+  | { kind: 'post'; postId: string; postBody: string | null; postAuthor: string | null }
+  | {
+      kind: 'venue';
+      venueId: string;
+      venueName: string;
+      neighborhood: string;
+      category: VenueCategory;
+    };
+
+export interface DmMessage {
+  id: string;
+  senderId: string;
+  body: string | null;
+  createdAt: string;
+  share: DmShare | null;
+}
+
+export type ShareInput =
+  | { kind: 'post'; postId: string }
+  | { kind: 'venue'; venueId: string };

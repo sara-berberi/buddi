@@ -10,9 +10,13 @@ import type {
   AvatarConfig,
   DailyAnswer,
   DailyToday,
+  DmMessage,
+  DmThreadSummary,
   Friendship,
   HistoryItem,
+  Post,
   QuestCard,
+  ShareInput,
   SuggestedUser,
   User,
   UserCard,
@@ -229,5 +233,71 @@ export const api = {
 
   async getVenueQuest(venueId: string): Promise<{ quest: QuestCard }> {
     return request(`/quests/venue/${venueId}`);
+  },
+
+  async letsGo(venueId: string, friendId: string): Promise<{ threadId: string; venueId: string }> {
+    return request('/quests/lets-go', { method: 'POST', body: { venueId, friendId } });
+  },
+
+  // ---- Posts / feed -------------------------------------------------------
+  async getFeed(): Promise<Post[]> {
+    const data = await request<{ posts: Post[] }>('/posts/feed');
+    return data.posts;
+  },
+
+  async getUserPosts(userId: string): Promise<Post[]> {
+    const data = await request<{ posts: Post[] }>(`/posts/user/${userId}`);
+    return data.posts;
+  },
+
+  async getPost(id: string): Promise<Post> {
+    const data = await request<{ post: Post }>(`/posts/${id}`);
+    return data.post;
+  },
+
+  async createPost(body: string): Promise<Post> {
+    const data = await request<{ post: Post }>('/posts', { method: 'POST', body: { body } });
+    return data.post;
+  },
+
+  async likePost(id: string): Promise<void> {
+    await request(`/posts/${id}/like`, { method: 'POST' });
+  },
+
+  async unlikePost(id: string): Promise<void> {
+    await request(`/posts/${id}/like`, { method: 'DELETE' });
+  },
+
+  async repost(id: string): Promise<Post> {
+    const data = await request<{ post: Post }>(`/posts/${id}/repost`, { method: 'POST' });
+    return data.post;
+  },
+
+  // ---- DM -----------------------------------------------------------------
+  async getThreads(): Promise<DmThreadSummary[]> {
+    const data = await request<{ threads: DmThreadSummary[] }>('/dm/threads');
+    return data.threads;
+  },
+
+  async openThread(userId: string): Promise<string> {
+    const data = await request<{ threadId: string }>(`/dm/with/${userId}`, { method: 'POST' });
+    return data.threadId;
+  },
+
+  async getMessages(threadId: string, after?: string): Promise<DmMessage[]> {
+    const q = after ? `?after=${encodeURIComponent(after)}` : '';
+    const data = await request<{ messages: DmMessage[] }>(`/dm/${threadId}/messages${q}`);
+    return data.messages;
+  },
+
+  async sendMessage(
+    threadId: string,
+    payload: { body?: string; share?: ShareInput }
+  ): Promise<DmMessage> {
+    const data = await request<{ message: DmMessage }>(`/dm/${threadId}/messages`, {
+      method: 'POST',
+      body: payload,
+    });
+    return data.message;
   },
 };

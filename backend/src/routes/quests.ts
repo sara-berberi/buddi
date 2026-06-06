@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { query, queryOne } from '../db/client.js';
-import { asyncHandler, notFound } from '../lib/http.js';
+import { query, queryOne, execute } from '../db/client.js';
+import { asyncHandler, notFound, badRequest } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
+import { ensureThread, areFriends } from '../lib/friends.js';
 
 export const questsRouter = Router();
 questsRouter.use(requireAuth);
@@ -129,5 +130,47 @@ questsRouter.get(
     );
     if (!venue) throw notFound('Venue not found');
     res.json({ quest: await buildQuestCard(venue) });
+  })
+);
+
+// POST /quests/lets-go  { venueId, friendId } -------------------------------
+// "Let's go": records the quest as accepted, logs a contact event against the
+// friendship (nudges the plant), and ensures a DM thread so the two can plan.
+// Returns the DM thread id; the client then shares the venue card into it.
+questsRouter.post(
+  '/lets-go',
+  asyncHandler(async (req, res) => {
+    const me = req.userId!;
+    const { venueId, friendId } = req.body ?? {};
+    if (!venueId || !friendId) throw badRequest('venueId and friendId are required');
+    if (!(await areFriends(me, friendId))) throw badRequest('You can only plan with a friend');
+
+    const venue = await queryOne<{ id: string }>(
+      `SELECT id FROM venues WHERE id = $1 AND active = TRUE`,
+      [venueId]
+    );
+    if (!venue) throw notFound('Venue not found');
+
+    // Find the friendship to log contact against.
+    const [lo, hi] = me < friendId ? [me, friendId] : [friendId, me];
+    const fr = await queryOne<{ id: string }>(
+      `SELECT id FROM friendships WHERE user_a_id = $1 AND user_b_id = $2 AND status = 'accepted'`,
+      [lo, hi]
+    );
+    if (fr) {
+      await execute(
+        `INSERT INTO quests (venue_id, friendship_id, for_user_id, status)
+         VALUES ($1, $2, $3, 'accepted')`,
+        [venueId, fr.id, me]
+      );
+      await execute(
+        `INSERT INTO contact_events (friendship_id, logged_by, kind, note)
+         VALUES ($1, $2, 'quest', 'Planning a quest')`,
+        [fr.id, me]
+      );
+    }
+
+    const threadId = await ensureThread(me, friendId);
+    res.json({ threadId, venueId });
   })
 );

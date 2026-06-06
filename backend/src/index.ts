@@ -7,6 +7,8 @@ import { usersRouter } from './routes/users.js';
 import { friendshipsRouter } from './routes/friendships.js';
 import { dailyRouter } from './routes/daily.js';
 import { questsRouter } from './routes/quests.js';
+import { postsRouter } from './routes/posts.js';
+import { dmRouter } from './routes/dm.js';
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use('/users', usersRouter);
 app.use('/friendships', friendshipsRouter);
 app.use('/daily', dailyRouter);
 app.use('/quests', questsRouter);
+app.use('/posts', postsRouter);
+app.use('/dm', dmRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });

@@ -9,6 +9,11 @@ export const colors = {
   muted: '#8A7E6E', // secondary text
   border: '#DDD4C4', // dividers and borders
   white: '#FFFFFF',
+  // Playful "buddy" accents (mascot/social layer) — bright + friendly.
+  bubble: '#FF5BA8', // hot pink — mascot, social CTAs, likes
+  bubbleDark: '#E03E8C',
+  sprout: '#7FA03A', // olive green mascot
+  sky: '#8FB0CE', // soft blue accent
 } as const;
 
 // Plant stem colors by health state (mirrors backend lib/health.ts).

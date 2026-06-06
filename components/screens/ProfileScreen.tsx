@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../lib/api';
 import { useDailyHistory } from '../../hooks/useDaily';
 import { useAuth } from '../../hooks/useAuth';
-import { Avatar } from '../../components/ui/Avatar';
-import { Button } from '../../components/ui/Button';
+import { Avatar } from '../ui/Avatar';
+import { Button } from '../ui/Button';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { formatTimestamp } from '../../lib/utils';
+import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -28,7 +29,10 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       style={{ backgroundColor: colors.cream }}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top + spacing.lg, paddingBottom: TAB_BAR_SPACE + insets.bottom },
+      ]}
     >
       <View style={styles.header}>
         <Avatar emoji={user.avatarEmoji} name={user.displayName} size={72} />
@@ -70,7 +74,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.lg },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream },
   header: { alignItems: 'center', marginBottom: spacing.lg },
   name: { fontFamily: fonts.headerItalic, fontSize: 28, color: colors.ink, marginTop: spacing.sm },

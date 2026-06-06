@@ -5,7 +5,19 @@ export const friendshipKeys = {
   all: ['friendships'] as const,
   detail: (id: string) => ['friendships', id] as const,
   pending: ['friendships', 'pending'] as const,
+  search: (q: string) => ['users', 'search', q] as const,
 };
+
+/** Search-as-you-type for people to follow. Only runs for queries >= 2 chars. */
+export function useUserSearch(query: string) {
+  const q = query.trim();
+  return useQuery({
+    queryKey: friendshipKeys.search(q),
+    queryFn: () => api.searchUsers(q),
+    enabled: q.length >= 2,
+    staleTime: 10_000,
+  });
+}
 
 export function useFriendships() {
   return useQuery({ queryKey: friendshipKeys.all, queryFn: api.getFriendships });

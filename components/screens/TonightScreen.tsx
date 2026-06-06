@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTonightQuests } from '../../hooks/useQuests';
-import { QuestCard } from '../../components/quest/QuestCard';
+import { QuestCard } from '../quest/QuestCard';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
+import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
 import type { VenueCategory } from '../../types';
 
 const FILTERS: { key: VenueCategory | 'all'; label: string }[] = [
@@ -24,7 +25,10 @@ export default function TonightScreen() {
   return (
     <ScrollView
       style={{ backgroundColor: colors.cream }}
-      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top + spacing.lg, paddingBottom: TAB_BAR_SPACE + insets.bottom },
+      ]}
     >
       <Text style={styles.kicker}>Tonight in</Text>
       <Text style={styles.city}>{data?.city ?? 'Tirana'}</Text>
@@ -62,7 +66,7 @@ export default function TonightScreen() {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.lg },
   kicker: { fontFamily: fonts.mono, fontSize: 12, color: colors.amber, textTransform: 'uppercase', letterSpacing: 1 },
   city: { fontFamily: fonts.headerItalic, fontSize: 32, color: colors.ink, marginBottom: spacing.md },
   pills: { gap: spacing.sm, paddingVertical: spacing.sm, paddingRight: spacing.lg },

@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToday, usePostAnswer } from '../../hooks/useDaily';
-import { AnswerCard } from '../../components/daily/AnswerCard';
-import { Button } from '../../components/ui/Button';
+import { AnswerCard } from '../daily/AnswerCard';
+import { Button } from '../ui/Button';
 import { colors, fonts, spacing } from '../../lib/constants';
+import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
 
 export default function DailyScreen() {
   const insets = useSafeAreaInsets();
@@ -41,7 +42,13 @@ export default function DailyScreen() {
       style={{ flex: 1, backgroundColor: colors.cream }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + spacing.lg, paddingBottom: TAB_BAR_SPACE + insets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.kicker}>Today’s question</Text>
         <Text style={styles.question}>{data.question.prompt}</Text>
 
@@ -107,7 +114,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: spacing.lg },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream },
   kicker: { fontFamily: fonts.mono, fontSize: 12, color: colors.amber, textTransform: 'uppercase', letterSpacing: 1 },
   question: { fontFamily: fonts.headerItalic, fontSize: 30, lineHeight: 38, color: colors.ink, marginTop: spacing.sm },

@@ -35,7 +35,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     } else if (user && needsOnboarding && !onOnboard) {
       router.replace('/auth/onboard');
     } else if (user && !needsOnboarding && inAuth) {
-      router.replace('/tabs/daily');
+      router.replace('/tabs');
     }
   }, [hydrated, user, segments, router]);
 

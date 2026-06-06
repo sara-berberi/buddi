@@ -29,11 +29,12 @@ Last updated: 2026-06-06
 - ✅ Backend (Node + Express + raw pg)
 - ✅ `backend/src/db/client.ts` — pg Pool + query/queryOne/execute/withTransaction
 - ✅ `backend/src/db/migrate.ts` — runs Schema + Dati against DATABASE_URL
-- ⏳ Railway PostgreSQL provisioned (URL supplied; tables NOT yet created)
-- ⏳ `Schema/1.1.0/create_tables.sql` executed on Railway
-- ⏳ `Dati/1.1.0/seed.sql` executed on Railway
-- ⏳ Backend deployed to Railway
-- ✅ `.env` files (frontend + backend; real DATABASE_URL in backend/.env, gitignored)
+- ✅ Railway PostgreSQL provisioned
+- ✅ `Schema/1.1.0/create_tables.sql` executed on Railway (DB had a stale schema from a prior attempt; dropped & rebuilt 2026-06-06 — no user data lost)
+- ✅ `Dati/1.1.0/seed.sql` executed on Railway (25 questions, 12 venues, 15 topics)
+- ✅ Backend deployed to Railway via GitHub auto-deploy — LIVE at https://buddi-production.up.railway.app (port 8080, production)
+- ✅ End-to-end verified live: register + authed /daily/today + /quests all return 200
+- ✅ `.env` files (frontend points at Railway URL; backend secrets gitignored)
 - 🔍 `npx expo export --platform web` bundles cleanly (728 modules); dev server not yet run interactively
 
 ---

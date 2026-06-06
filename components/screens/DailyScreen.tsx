@@ -98,6 +98,7 @@ export default function DailyScreen() {
                 key={a.id}
                 name={a.display_name}
                 emoji={a.avatar_emoji}
+                avatar={a.avatar_config}
                 body={a.body}
                 timestamp={a.created_at}
               />

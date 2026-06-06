@@ -7,6 +7,7 @@ import { useFriendshipQuests } from '../../hooks/useQuests';
 import { PlantSVG } from '../../components/plants/PlantSVG';
 import { QuestCard } from '../../components/quest/QuestCard';
 import { Button } from '../../components/ui/Button';
+import { PersonAvatar } from '../../components/avatar/PersonAvatar';
 import { colors, fonts, radius, spacing, HEALTH_LABEL } from '../../lib/constants';
 import { relativeDays, formatTimestamp } from '../../lib/utils';
 
@@ -47,7 +48,10 @@ export default function FriendshipDetail() {
       {/* Hero */}
       <View style={styles.hero}>
         <PlantSVG health={f.health} stemColor={f.stemColor} size={160} />
-        <Text style={styles.name}>{f.friend.displayName}</Text>
+        <View style={styles.heroNameRow}>
+          <PersonAvatar config={f.friend.avatar} size={36} ring />
+          <Text style={styles.name}>{f.friend.displayName}</Text>
+        </View>
         <Text style={styles.handle}>@{f.friend.username}</Text>
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
@@ -107,7 +111,8 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream },
   hero: { alignItems: 'center', marginBottom: spacing.lg },
-  name: { fontFamily: fonts.headerItalic, fontSize: 30, color: colors.ink, marginTop: spacing.sm },
+  heroNameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
+  name: { fontFamily: fonts.headerItalic, fontSize: 30, color: colors.ink },
   handle: { fontFamily: fonts.mono, fontSize: 13, color: colors.muted, marginTop: 2 },
   statsRow: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.lg },
   statBox: {

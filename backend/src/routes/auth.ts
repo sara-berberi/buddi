@@ -9,33 +9,11 @@ import {
 } from '../lib/jwt.js';
 import { asyncHandler, badRequest, unauthorized, conflict } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
+import { publicUser, type UserRow as BaseUserRow } from '../lib/userShape.js';
 
 export const authRouter = Router();
 
-interface UserRow {
-  id: string;
-  username: string;
-  email: string;
-  display_name: string;
-  bio: string | null;
-  city: string;
-  avatar_emoji: string;
-  onboarded: boolean;
-  password_hash?: string;
-}
-
-function publicUser(u: UserRow) {
-  return {
-    id: u.id,
-    username: u.username,
-    email: u.email,
-    displayName: u.display_name,
-    bio: u.bio,
-    city: u.city,
-    avatarEmoji: u.avatar_emoji,
-    onboarded: u.onboarded,
-  };
-}
+type UserRow = BaseUserRow & { password_hash?: string };
 
 async function issueTokens(userId: string) {
   const access = signAccessToken(userId);

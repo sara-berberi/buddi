@@ -5,8 +5,13 @@ export const friendshipKeys = {
   all: ['friendships'] as const,
   detail: (id: string) => ['friendships', id] as const,
   pending: ['friendships', 'pending'] as const,
+  suggestions: ['friendships', 'suggestions'] as const,
   search: (q: string) => ['users', 'search', q] as const,
 };
+
+export function useSuggestions() {
+  return useQuery({ queryKey: friendshipKeys.suggestions, queryFn: api.getSuggestions });
+}
 
 /** Search-as-you-type for people to follow. Only runs for queries >= 2 chars. */
 export function useUserSearch(query: string) {
@@ -39,7 +44,10 @@ export function useInvite() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (username: string) => api.invite(username),
-    onSuccess: () => qc.invalidateQueries({ queryKey: friendshipKeys.all }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: friendshipKeys.all });
+      qc.invalidateQueries({ queryKey: friendshipKeys.suggestions });
+    },
   });
 }
 

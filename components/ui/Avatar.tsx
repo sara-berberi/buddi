@@ -1,20 +1,23 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts } from '../../lib/constants';
+import { PersonAvatar } from '../avatar/PersonAvatar';
+import type { AvatarConfig } from '../../types';
 
 interface Props {
+  avatar?: AvatarConfig | null;
   emoji?: string;
   name?: string;
   size?: number;
 }
 
-export function Avatar({ emoji, name, size = 44 }: Props) {
+// Renders the styleable person avatar when a config is present; otherwise
+// falls back to emoji/initial. Used everywhere a user is shown.
+export function Avatar({ avatar, emoji, name, size = 44 }: Props) {
+  if (avatar) {
+    return <PersonAvatar config={avatar} size={size} ring />;
+  }
   return (
-    <View
-      style={[
-        styles.circle,
-        { width: size, height: size, borderRadius: size / 2 },
-      ]}
-    >
+    <View style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}>
       <Text style={{ fontSize: size * 0.5, fontFamily: fonts.body }}>
         {emoji ?? name?.[0]?.toUpperCase() ?? '🌱'}
       </Text>

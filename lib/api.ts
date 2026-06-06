@@ -7,12 +7,15 @@ import {
 } from './auth';
 import type {
   AuthResponse,
+  AvatarConfig,
   DailyAnswer,
   DailyToday,
   Friendship,
   HistoryItem,
   QuestCard,
+  SuggestedUser,
   User,
+  UserCard,
   VenueCategory,
 } from '../types';
 
@@ -145,14 +148,27 @@ export const api = {
     return request('/users/me');
   },
 
-  async updateProfile(patch: Partial<Pick<User, 'displayName' | 'bio' | 'city' | 'avatarEmoji'>>) {
+  async updateProfile(
+    patch: Partial<{
+      displayName: string;
+      bio: string;
+      city: string;
+      avatar: AvatarConfig;
+      isPrivate: boolean;
+    }>
+  ) {
     const data = await request<{ user: User }>('/users/me', { method: 'PATCH', body: patch });
     return data.user;
   },
 
-  async searchUsers(q: string): Promise<User[]> {
-    const data = await request<{ users: User[] }>(`/users/search?q=${encodeURIComponent(q)}`);
+  async searchUsers(q: string): Promise<UserCard[]> {
+    const data = await request<{ users: UserCard[] }>(`/users/search?q=${encodeURIComponent(q)}`);
     return data.users;
+  },
+
+  async getSuggestions(): Promise<SuggestedUser[]> {
+    const data = await request<{ suggestions: SuggestedUser[] }>('/friendships/suggestions');
+    return data.suggestions;
   },
 
   // ---- Friendships --------------------------------------------------------

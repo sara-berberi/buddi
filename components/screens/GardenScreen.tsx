@@ -20,10 +20,11 @@ import {
 import { PlantSVG } from '../plants/PlantSVG';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
+import { BuddiesIcon } from '../avatar/BuddiesIcon';
 import { colors, fonts, radius, spacing, HEALTH_LABEL } from '../../lib/constants';
 import { relativeDays } from '../../lib/utils';
 import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
-import type { Friendship, User } from '../../types';
+import type { Friendship, UserCard } from '../../types';
 
 export default function GardenScreen() {
   const insets = useSafeAreaInsets();
@@ -42,7 +43,7 @@ export default function GardenScreen() {
   const needsAttention =
     friendships?.filter((f) => f.health === 'wilting' || f.health === 'critical') ?? [];
 
-  async function follow(user: User) {
+  async function follow(user: UserCard) {
     setSearchError(null);
     try {
       await invite.mutateAsync(user.username);
@@ -101,7 +102,7 @@ export default function GardenScreen() {
           ) : search.data && search.data.length > 0 ? (
             search.data.map((u) => (
               <View key={u.id} style={styles.resultRow}>
-                <Avatar emoji={u.avatarEmoji} name={u.displayName} size={44} />
+                <Avatar avatar={u.avatar} emoji={u.avatarEmoji} name={u.displayName} size={44} />
                 <View style={styles.resultInfo}>
                   <Text style={styles.resultName}>{u.displayName}</Text>
                   <Text style={styles.resultHandle}>@{u.username}</Text>
@@ -135,7 +136,7 @@ export default function GardenScreen() {
               <Text style={styles.pendingTitle}>Follow requests</Text>
               {pending.map((p) => (
                 <View key={p.id} style={styles.pendingRow}>
-                  <Avatar emoji={p.friend.avatarEmoji} name={p.friend.displayName} size={36} />
+                  <Avatar avatar={p.friend.avatar} emoji={p.friend.avatarEmoji} name={p.friend.displayName} size={36} />
                   <Text style={styles.pendingName} numberOfLines={1}>
                     {p.friend.displayName} <Text style={styles.pendingHandle}>@{p.friend.username}</Text>
                   </Text>
@@ -152,10 +153,16 @@ export default function GardenScreen() {
 
           {!friendships || friendships.length === 0 ? (
             <View style={styles.emptyGarden}>
-              <PlantSVG health="good" size={120} />
+              <BuddiesIcon size={140} />
               <Text style={styles.emptyText}>
-                Your garden is empty. Search above to find friends and plant your first seed.
+                Your garden is empty. Find your buddies to plant your first seed.
               </Text>
+              <Button
+                label="Find people"
+                variant="primary"
+                onPress={() => router.push('/people')}
+                style={{ marginTop: spacing.md }}
+              />
             </View>
           ) : (
             <View style={styles.grid}>

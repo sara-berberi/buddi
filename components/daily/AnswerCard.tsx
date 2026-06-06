@@ -2,20 +2,22 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { formatTimestamp } from '../../lib/utils';
 import { Avatar } from '../ui/Avatar';
+import type { AvatarConfig } from '../../types';
 
 interface Props {
   name: string;
   emoji?: string;
+  avatar?: AvatarConfig | null;
   body: string;
   timestamp: string;
   isMine?: boolean; // shows the lock icon (uneditable)
 }
 
-export function AnswerCard({ name, emoji, body, timestamp, isMine }: Props) {
+export function AnswerCard({ name, emoji, avatar, body, timestamp, isMine }: Props) {
   return (
     <View style={[styles.card, isMine && styles.mine]}>
       <View style={styles.header}>
-        <Avatar emoji={emoji} name={name} size={32} />
+        <Avatar avatar={avatar} emoji={emoji} name={name} size={36} />
         <View style={styles.headerText}>
           <Text style={styles.name}>{isMine ? 'You' : name}</Text>
           <Text style={styles.time}>{formatTimestamp(timestamp)}</Text>

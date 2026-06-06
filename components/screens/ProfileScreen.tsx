@@ -1,10 +1,10 @@
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { api } from '../../lib/api';
 import { useDailyHistory } from '../../hooks/useDaily';
 import { useAuth } from '../../hooks/useAuth';
-import { Avatar } from '../ui/Avatar';
+import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
+import { PersonAvatar } from '../avatar/PersonAvatar';
 import { Button } from '../ui/Button';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { formatTimestamp } from '../../lib/utils';
@@ -12,9 +12,11 @@ import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
-  const { data: profile, isLoading } = useQuery({ queryKey: ['profile'], queryFn: api.getProfile });
+  const router = useRouter();
+  const { logout, user: authUser } = useAuth();
+  const { data: profile, isLoading } = useProfile();
   const { data: history } = useDailyHistory();
+  const update = useUpdateProfile();
 
   if (isLoading || !profile) {
     return (
@@ -25,6 +27,9 @@ export default function ProfileScreen() {
   }
 
   const { user, stats } = profile;
+  // Prefer the live auth user's avatar so edits reflect instantly.
+  const avatar = authUser?.avatar ?? user.avatar;
+  const isPrivate = authUser?.isPrivate ?? user.isPrivate;
 
   return (
     <ScrollView
@@ -35,15 +40,58 @@ export default function ProfileScreen() {
       ]}
     >
       <View style={styles.header}>
-        <Avatar emoji={user.avatarEmoji} name={user.displayName} size={72} />
+        <Pressable onPress={() => router.push('/avatar')} style={styles.avatarWrap}>
+          <PersonAvatar config={avatar} size={104} ring />
+          <View style={styles.editPip}>
+            <Text style={styles.editPipText}>✎</Text>
+          </View>
+        </Pressable>
         <Text style={styles.name}>{user.displayName}</Text>
         <Text style={styles.handle}>@{user.username} · {user.city}</Text>
         {user.bio ? <Text style={styles.bio}>{user.bio}</Text> : null}
+
+        <Button
+          label="Style your buddy"
+          variant="accent"
+          onPress={() => router.push('/avatar')}
+          style={styles.styleBtn}
+        />
       </View>
 
       <View style={styles.stats}>
-        <Stat value={stats.friends} label="Friends" />
-        <Stat value={stats.answers} label="Answers" />
+        <Pressable style={styles.stat} onPress={() => router.push('/people')}>
+          <Text style={styles.statValue}>{stats.friends}</Text>
+          <Text style={styles.statLabel}>Friends</Text>
+        </Pressable>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{stats.answers}</Text>
+          <Text style={styles.statLabel}>Answers</Text>
+        </View>
+      </View>
+
+      <Button
+        label="Find people"
+        variant="primary"
+        onPress={() => router.push('/people')}
+        style={{ marginBottom: spacing.lg }}
+      />
+
+      {/* Privacy */}
+      <View style={styles.privacyRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.privacyTitle}>{isPrivate ? '🔒 Private account' : '🌍 Public account'}</Text>
+          <Text style={styles.privacySub}>
+            {isPrivate
+              ? 'Follows need your approval before they can see you.'
+              : 'Anyone can find you and send a follow request.'}
+          </Text>
+        </View>
+        <Switch
+          value={isPrivate}
+          onValueChange={(v) => update.mutate({ isPrivate: v })}
+          trackColor={{ true: colors.forest, false: colors.border }}
+          thumbColor={colors.surface}
+        />
       </View>
 
       <Text style={styles.sectionLabel}>Your past answers</Text>
@@ -64,22 +112,29 @@ export default function ProfileScreen() {
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.lg },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream },
   header: { alignItems: 'center', marginBottom: spacing.lg },
+  avatarWrap: { position: 'relative' },
+  editPip: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.amber,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.cream,
+  },
+  editPipText: { color: colors.white, fontSize: 14 },
   name: { fontFamily: fonts.headerItalic, fontSize: 28, color: colors.ink, marginTop: spacing.sm },
   handle: { fontFamily: fonts.mono, fontSize: 13, color: colors.muted, marginTop: 2 },
   bio: { fontFamily: fonts.body, fontSize: 15, color: colors.ink, textAlign: 'center', marginTop: spacing.sm },
+  styleBtn: { marginTop: spacing.md, paddingVertical: 10, minHeight: 0, paddingHorizontal: spacing.lg },
   stats: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
@@ -92,6 +147,19 @@ const styles = StyleSheet.create({
   stat: { flex: 1, alignItems: 'center' },
   statValue: { fontFamily: fonts.mono, fontSize: 26, color: colors.forest },
   statLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, marginTop: 2 },
+  privacyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    gap: spacing.md,
+  },
+  privacyTitle: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.ink },
+  privacySub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2 },
   sectionLabel: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.muted, marginBottom: spacing.md },
   empty: { fontFamily: fonts.body, fontSize: 15, color: colors.muted },
   historyCard: {

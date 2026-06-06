@@ -58,7 +58,7 @@ dailyRouter.get(
       // Only accepted friends' answers to the SAME question, newest first.
       friendsAnswers = await query(
         `SELECT da.id, da.body, da.created_at,
-                u.id AS user_id, u.display_name, u.avatar_emoji
+                u.id AS user_id, u.display_name, u.avatar_emoji, u.avatar_config
          FROM daily_answers da
          JOIN users u ON u.id = da.user_id
          JOIN friendships f

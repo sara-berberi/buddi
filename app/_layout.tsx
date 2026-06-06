@@ -61,6 +61,8 @@ export default function RootLayout() {
             <Stack.Screen name="tabs" />
             <Stack.Screen name="friendship/[id]" options={{ headerShown: true, title: '' }} />
             <Stack.Screen name="quest/[id]" options={{ headerShown: true, title: '' }} />
+            <Stack.Screen name="people" options={{ headerShown: true, title: 'People' }} />
+            <Stack.Screen name="avatar" options={{ headerShown: true, title: 'Edit avatar', presentation: 'modal' }} />
           </Stack>
         </AuthGate>
       </SafeAreaProvider>

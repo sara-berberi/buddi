@@ -2,6 +2,22 @@ import type { HealthState } from '../lib/constants';
 
 export type { HealthState };
 
+export interface AvatarConfig {
+  skin: string;
+  hair: string;
+  hairColor: string;
+  accessory: string;
+  bg: string;
+}
+
+export const DEFAULT_AVATAR: AvatarConfig = {
+  skin: '#E8B894',
+  hair: 'short',
+  hairColor: '#3A2A1A',
+  accessory: 'none',
+  bg: '#C9E4D3',
+};
+
 export interface User {
   id: string;
   username: string;
@@ -10,7 +26,24 @@ export interface User {
   bio: string | null;
   city: string;
   avatarEmoji: string;
+  avatar: AvatarConfig;
+  isPrivate: boolean;
   onboarded: boolean;
+}
+
+/** Lightweight user shown in search / friends / suggestions. */
+export interface UserCard {
+  id: string;
+  username: string;
+  displayName: string;
+  city: string;
+  avatarEmoji: string;
+  avatar: AvatarConfig;
+  isPrivate: boolean;
+}
+
+export interface SuggestedUser extends UserCard {
+  reason: string;
 }
 
 export interface AuthResponse {
@@ -24,6 +57,7 @@ export interface FriendSummary {
   username: string;
   displayName: string;
   avatarEmoji: string;
+  avatar: AvatarConfig;
 }
 
 export interface Friendship {
@@ -63,6 +97,7 @@ export interface FriendAnswer {
   user_id: string;
   display_name: string;
   avatar_emoji: string;
+  avatar_config: AvatarConfig | null;
 }
 
 export interface DailyToday {

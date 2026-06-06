@@ -3,6 +3,7 @@ import { query, queryOne, execute } from '../db/client.js';
 import { asyncHandler, badRequest, notFound, conflict } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
 import { healthFromDays, daysSince } from '../lib/health.js';
+import { userCard, DEFAULT_AVATAR, type AvatarConfig } from '../lib/userShape.js';
 
 export const friendshipsRouter = Router();
 friendshipsRouter.use(requireAuth);
@@ -18,6 +19,7 @@ interface FriendshipRow {
   friend_username: string;
   friend_display_name: string;
   friend_avatar_emoji: string;
+  friend_avatar_config: AvatarConfig | null;
 }
 
 // Order a pair so user_a_id < user_b_id (matches the table CHECK constraint).
@@ -41,6 +43,7 @@ function shapeFriendship(row: FriendshipRow) {
       username: row.friend_username,
       displayName: row.friend_display_name,
       avatarEmoji: row.friend_avatar_emoji,
+      avatar: row.friend_avatar_config ?? DEFAULT_AVATAR,
     },
   };
 }
@@ -51,7 +54,8 @@ const SELECT_FRIENDSHIPS = `
          u.id          AS friend_id,
          u.username    AS friend_username,
          u.display_name AS friend_display_name,
-         u.avatar_emoji AS friend_avatar_emoji
+         u.avatar_emoji AS friend_avatar_emoji,
+         u.avatar_config AS friend_avatar_config
   FROM friendships f
   JOIN users u
     ON u.id = CASE WHEN f.user_a_id = $1 THEN f.user_b_id ELSE f.user_a_id END
@@ -83,6 +87,58 @@ friendshipsRouter.get(
       [me]
     );
     res.json({ pending: rows.map(shapeFriendship) });
+  })
+);
+
+// GET /friendships/suggestions ---------------------------------------------
+// Friends-of-friends + same-city users you're not already connected to.
+// Within spec: no stranger-matching, just people adjacent to your network.
+friendshipsRouter.get(
+  '/suggestions',
+  asyncHandler(async (req, res) => {
+    const me = req.userId!;
+    const rows = await query(
+      `
+      WITH my_links AS (
+        -- everyone I'm already connected to (any status), plus myself
+        SELECT CASE WHEN user_a_id = $1 THEN user_b_id ELSE user_a_id END AS other_id
+        FROM friendships
+        WHERE user_a_id = $1 OR user_b_id = $1
+      ),
+      my_friends AS (
+        SELECT other_id FROM my_links
+      ),
+      fof AS (
+        -- friends of my accepted friends
+        SELECT CASE WHEN f.user_a_id = mf.other_id THEN f.user_b_id ELSE f.user_a_id END AS cand_id
+        FROM friendships f
+        JOIN my_friends mf ON (f.user_a_id = mf.other_id OR f.user_b_id = mf.other_id)
+        WHERE f.status = 'accepted'
+      ),
+      me_row AS (SELECT city FROM users WHERE id = $1)
+      SELECT DISTINCT u.id, u.username, u.display_name, u.city,
+             u.avatar_emoji, u.avatar_config, u.is_private,
+             (u.id IN (SELECT cand_id FROM fof)) AS via_friends
+      FROM users u, me_row
+      WHERE u.id <> $1
+        AND u.id NOT IN (SELECT other_id FROM my_links)
+        AND (
+          u.id IN (SELECT cand_id FROM fof)
+          OR lower(u.city) = lower(me_row.city)
+        )
+      ORDER BY via_friends DESC, u.display_name
+      LIMIT 20
+      `,
+      [me]
+    );
+    res.json({
+      suggestions: rows.map((r) => ({
+        ...userCard(r as never),
+        reason: (r as { via_friends: boolean }).via_friends
+          ? 'Friend of a friend'
+          : 'In your city',
+      })),
+    });
   })
 );
 

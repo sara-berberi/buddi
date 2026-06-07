@@ -18,6 +18,8 @@ export const DEFAULT_AVATAR: AvatarConfig = {
   bg: '#C9E4D3',
 };
 
+export type CompanionType = 'plant' | 'creature';
+
 export interface User {
   id: string;
   username: string;
@@ -28,6 +30,7 @@ export interface User {
   avatarEmoji: string;
   avatar: AvatarConfig;
   isPrivate: boolean;
+  companionType: CompanionType;
   onboarded: boolean;
 }
 

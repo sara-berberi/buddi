@@ -17,18 +17,22 @@ import {
   useAcceptInvite,
   useUserSearch,
 } from '../../hooks/useFriendships';
-import { PlantSVG } from '../plants/PlantSVG';
+import { Companion } from '../plants/Companion';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
+import { Icon } from '../ui/Icon';
 import { BuddiesIcon } from '../avatar/BuddiesIcon';
+import { useAuth } from '../../hooks/useAuth';
 import { colors, fonts, radius, spacing, HEALTH_LABEL } from '../../lib/constants';
 import { relativeDays } from '../../lib/utils';
 import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
-import type { Friendship, UserCard } from '../../types';
+import type { CompanionType, Friendship, UserCard } from '../../types';
 
 export default function GardenScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
+  const companionType: CompanionType = user?.companionType ?? 'plant';
   const { data: friendships, isLoading } = useFriendships();
   const { data: pending } = usePendingInvites();
   const invite = useInvite();
@@ -76,7 +80,7 @@ export default function GardenScreen() {
 
       {/* Search bar — find & follow people */}
       <View style={styles.searchBar}>
-        <Text style={styles.searchIcon}>⌕</Text>
+        <Icon name="search" size={18} color={colors.muted} />
         <TextInput
           style={styles.searchInput}
           value={query}
@@ -89,7 +93,7 @@ export default function GardenScreen() {
         />
         {query.length > 0 && (
           <Pressable onPress={() => setQuery('')} hitSlop={8}>
-            <Text style={styles.clearIcon}>✕</Text>
+            <Icon name="close" size={16} color={colors.muted} />
           </Pressable>
         )}
       </View>
@@ -167,7 +171,12 @@ export default function GardenScreen() {
           ) : (
             <View style={styles.grid}>
               {friendships.map((f) => (
-                <PlantTile key={f.id} friendship={f} onPress={() => router.push(`/friendship/${f.id}`)} />
+                <PlantTile
+                  key={f.id}
+                  friendship={f}
+                  companionType={companionType}
+                  onPress={() => router.push(`/friendship/${f.id}`)}
+                />
               ))}
             </View>
           )}
@@ -177,10 +186,18 @@ export default function GardenScreen() {
   );
 }
 
-function PlantTile({ friendship, onPress }: { friendship: Friendship; onPress: () => void }) {
+function PlantTile({
+  friendship,
+  companionType,
+  onPress,
+}: {
+  friendship: Friendship;
+  companionType: CompanionType;
+  onPress: () => void;
+}) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tile, pressed && { opacity: 0.85 }]}>
-      <PlantSVG health={friendship.health} stemColor={friendship.stemColor} size={104} />
+      <Companion type={companionType} health={friendship.health} stemColor={friendship.stemColor} size={104} />
       <Text style={styles.tileName} numberOfLines={1}>
         {friendship.friend.displayName}
       </Text>
@@ -206,8 +223,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
+    gap: spacing.sm,
   },
-  searchIcon: { fontSize: 18, color: colors.muted, marginRight: spacing.sm },
   searchInput: {
     flex: 1,
     paddingVertical: spacing.md,
@@ -215,7 +232,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
   },
-  clearIcon: { fontSize: 14, color: colors.muted, paddingHorizontal: spacing.xs },
 
   results: { marginTop: spacing.xs },
   resultRow: {

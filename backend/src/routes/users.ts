@@ -41,7 +41,7 @@ usersRouter.get(
 usersRouter.patch(
   '/me',
   asyncHandler(async (req, res) => {
-    const { displayName, bio, city, avatar, isPrivate } = req.body ?? {};
+    const { displayName, bio, city, avatar, isPrivate, companionType } = req.body ?? {};
     const fields: string[] = [];
     const values: unknown[] = [];
     let i = 1;
@@ -66,6 +66,13 @@ usersRouter.patch(
     if (isPrivate !== undefined) {
       fields.push(`is_private = $${i++}`);
       values.push(Boolean(isPrivate));
+    }
+    if (companionType !== undefined) {
+      if (companionType !== 'plant' && companionType !== 'creature') {
+        throw badRequest('companionType must be plant or creature');
+      }
+      fields.push(`companion_type = $${i++}`);
+      values.push(companionType);
     }
     if (fields.length === 0) throw badRequest('No fields to update');
 

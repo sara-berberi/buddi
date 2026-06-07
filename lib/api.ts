@@ -159,6 +159,7 @@ export const api = {
       city: string;
       avatar: AvatarConfig;
       isPrivate: boolean;
+      companionType: 'plant' | 'creature';
     }>
   ) {
     const data = await request<{ user: User }>('/users/me', { method: 'PATCH', body: patch });

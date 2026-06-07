@@ -18,6 +18,7 @@ const SCHEMA_FILES = [
   ['Schema', '1.1.0', 'create_tables.sql'],
   ['Schema', '1.2.0', 'alter_tables.sql'],
   ['Schema', '1.3.0', 'create_tables.sql'],
+  ['Schema', '1.4.0', 'alter_tables.sql'],
 ];
 const SEED_FILES = [['Dati', '1.1.0', 'seed.sql']];
 

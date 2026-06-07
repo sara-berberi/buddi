@@ -4,10 +4,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFriendship, useMarkContact, useMissYou } from '../../hooks/useFriendships';
 import { useFriendshipQuests } from '../../hooks/useQuests';
-import { PlantSVG } from '../../components/plants/PlantSVG';
+import { Companion } from '../../components/plants/Companion';
 import { QuestCard } from '../../components/quest/QuestCard';
 import { Button } from '../../components/ui/Button';
 import { PersonAvatar } from '../../components/avatar/PersonAvatar';
+import { useAuth } from '../../hooks/useAuth';
 import { colors, fonts, radius, spacing, HEALTH_LABEL } from '../../lib/constants';
 import { relativeDays, formatTimestamp } from '../../lib/utils';
 
@@ -21,6 +22,7 @@ export default function FriendshipDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   const { data: f, isLoading } = useFriendship(id!);
   const { data: questData } = useFriendshipQuests(id!);
   const markContact = useMarkContact(id!);
@@ -47,7 +49,7 @@ export default function FriendshipDetail() {
     >
       {/* Hero */}
       <View style={styles.hero}>
-        <PlantSVG health={f.health} stemColor={f.stemColor} size={160} />
+        <Companion type={user?.companionType ?? 'plant'} health={f.health} stemColor={f.stemColor} size={160} />
         <View style={styles.heroNameRow}>
           <PersonAvatar config={f.friend.avatar} size={36} ring />
           <Text style={styles.name}>{f.friend.displayName}</Text>

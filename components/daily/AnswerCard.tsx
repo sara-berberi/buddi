@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { formatTimestamp } from '../../lib/utils';
 import { Avatar } from '../ui/Avatar';
+import { Icon } from '../ui/Icon';
 import type { AvatarConfig } from '../../types';
 
 interface Props {
@@ -22,7 +23,7 @@ export function AnswerCard({ name, emoji, avatar, body, timestamp, isMine }: Pro
           <Text style={styles.name}>{isMine ? 'You' : name}</Text>
           <Text style={styles.time}>{formatTimestamp(timestamp)}</Text>
         </View>
-        {isMine && <Text style={styles.lock}>🔒</Text>}
+        {isMine && <Icon name="lock" size={15} color={colors.muted} />}
       </View>
       <Text style={styles.body}>{body}</Text>
     </View>

@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../hooks/useAuth';
+import { useUpdateProfile } from '../../hooks/useProfile';
 import { Button } from '../../components/ui/Button';
+import { CompanionPicker } from '../../components/plants/CompanionPicker';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
+import type { CompanionType } from '../../types';
 
 // 5 questions to build a personality profile (used for future quest personalization).
 const QUESTIONS = [
@@ -17,7 +20,9 @@ const QUESTIONS = [
 export default function OnboardScreen() {
   const insets = useSafeAreaInsets();
   const { completeOnboarding } = useAuth();
+  const updateProfile = useUpdateProfile();
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [companion, setCompanion] = useState<CompanionType>('plant');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +32,8 @@ export default function OnboardScreen() {
     setError(null);
     setLoading(true);
     try {
+      // Save the companion choice first (completeOnboarding flips the auth gate).
+      await updateProfile.mutateAsync({ companionType: companion });
       const payload = QUESTIONS.filter((q) => answers[q.key]?.trim()).map((q) => ({
         questionKey: q.key,
         answer: answers[q.key].trim(),
@@ -45,7 +52,13 @@ export default function OnboardScreen() {
       style={{ backgroundColor: colors.cream }}
       contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }]}
     >
-      <Text style={styles.heading}>A few questions</Text>
+      <Text style={styles.heading}>Pick your buddy</Text>
+      <Text style={styles.sub}>
+        Every friendship grows as a companion. Choose how yours looks — you can change it later.
+      </Text>
+      <CompanionPicker value={companion} onChange={setCompanion} />
+
+      <Text style={[styles.heading, { marginTop: spacing.xl }]}>A few questions</Text>
       <Text style={styles.sub}>
         This helps us suggest the right quests later. Answer what you like — you can skip any.
       </Text>

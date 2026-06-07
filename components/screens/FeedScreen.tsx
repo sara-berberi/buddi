@@ -19,6 +19,7 @@ import { api } from '../../lib/api';
 import { PostCard } from '../social/PostCard';
 import { BlobMascot } from '../brand/BlobMascot';
 import { Avatar } from '../ui/Avatar';
+import { Icon } from '../ui/Icon';
 import { Button } from '../ui/Button';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
@@ -74,7 +75,7 @@ export default function FeedScreen() {
           <Text style={styles.brandText}>Buddi</Text>
         </View>
         <Pressable onPress={() => router.push('/dm')} style={styles.dmBtn} hitSlop={8}>
-          <Text style={styles.dmGlyph}>✉️</Text>
+          <Icon name="mail" size={20} color={colors.forest} />
         </Pressable>
       </View>
 

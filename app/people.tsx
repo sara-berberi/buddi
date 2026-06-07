@@ -10,6 +10,7 @@ import {
   useSuggestions,
 } from '../hooks/useFriendships';
 import { Avatar } from '../components/ui/Avatar';
+import { Icon } from '../components/ui/Icon';
 import { Button } from '../components/ui/Button';
 import { colors, fonts, radius, spacing } from '../lib/constants';
 import type { AvatarConfig } from '../types';
@@ -64,7 +65,12 @@ export default function PeopleScreen() {
                 name={f.friend.displayName}
                 handle={f.friend.username}
                 onPress={() => router.push(`/friendship/${f.id}`)}
-                right={<Text style={styles.friendTag}>🌱 {f.health}</Text>}
+                right={
+                  <View style={styles.friendTagRow}>
+                    <Icon name="garden" size={13} color={colors.muted} />
+                    <Text style={styles.friendTag}>{f.health}</Text>
+                  </View>
+                }
               />
             ))
           )
@@ -184,6 +190,7 @@ const styles = StyleSheet.create({
   name: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
   handle: { fontFamily: fonts.mono, fontSize: 12, color: colors.muted, marginTop: 1 },
   subtitle: { fontFamily: fonts.body, fontSize: 12, color: colors.amber, marginTop: 2 },
+  friendTagRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   friendTag: { fontFamily: fonts.mono, fontSize: 11, color: colors.muted },
   smallBtn: { minHeight: 0, paddingVertical: 10, paddingHorizontal: spacing.md },
   empty: { fontFamily: fonts.body, fontSize: 15, color: colors.muted, textAlign: 'center', marginTop: spacing.xxl },

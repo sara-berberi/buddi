@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '../ui/Avatar';
+import { Icon, type IconName } from '../ui/Icon';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { formatTimestamp } from '../../lib/utils';
 import type { Post } from '../../types';
@@ -20,7 +21,10 @@ export function PostCard({ post, onLike, onRepost, onShareLink, onShareDM }: Pro
   return (
     <View style={styles.card}>
       {isRepost && (
-        <Text style={styles.repostTag}>🔁 {post.author.displayName} reposted</Text>
+        <View style={styles.repostTagRow}>
+          <Icon name="repost" size={13} color={colors.muted} />
+          <Text style={styles.repostTag}>{post.author.displayName} reposted</Text>
+        </View>
       )}
 
       <View style={styles.header}>
@@ -35,38 +39,39 @@ export function PostCard({ post, onLike, onRepost, onShareLink, onShareDM }: Pro
 
       <View style={styles.actions}>
         <Action
-          glyph={post.likedByMe ? '❤️' : '🤍'}
+          icon={post.likedByMe ? 'heartFilled' : 'heart'}
           label={post.likeCount > 0 ? String(post.likeCount) : 'Like'}
           active={post.likedByMe}
           onPress={onLike}
         />
         <Action
-          glyph="🔁"
+          icon="repost"
           label={post.repostCount > 0 ? String(post.repostCount) : 'Repost'}
           onPress={onRepost}
         />
-        <Action glyph="🔗" label="Link" onPress={onShareLink} />
-        <Action glyph="✈️" label="Send" onPress={onShareDM} />
+        <Action icon="link" label="Link" onPress={onShareLink} />
+        <Action icon="send" label="Send" onPress={onShareDM} />
       </View>
     </View>
   );
 }
 
 function Action({
-  glyph,
+  icon,
   label,
   active,
   onPress,
 }: {
-  glyph: string;
+  icon: IconName;
   label: string;
   active?: boolean;
   onPress: () => void;
 }) {
+  const tint = active ? colors.bubbleDark : colors.muted;
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.action, pressed && { opacity: 0.6 }]} hitSlop={6}>
-      <Text style={styles.actionGlyph}>{glyph}</Text>
-      <Text style={[styles.actionLabel, active && { color: colors.bubbleDark }]}>{label}</Text>
+      <Icon name={icon} size={18} color={tint} />
+      <Text style={[styles.actionLabel, { color: tint }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -80,7 +85,8 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
   },
-  repostTag: { fontFamily: fonts.mono, fontSize: 11, color: colors.muted, marginBottom: spacing.sm },
+  repostTagRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: spacing.sm },
+  repostTag: { fontFamily: fonts.mono, fontSize: 11, color: colors.muted },
   header: { flexDirection: 'row', alignItems: 'center' },
   headerText: { flex: 1, marginLeft: spacing.sm },
   name: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
@@ -94,7 +100,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  action: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4, paddingHorizontal: 6 },
-  actionGlyph: { fontSize: 16 },
+  action: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 4, paddingHorizontal: 6 },
   actionLabel: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.muted },
 });

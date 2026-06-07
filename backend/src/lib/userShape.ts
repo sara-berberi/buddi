@@ -11,6 +11,7 @@ export interface UserRow {
   avatar_emoji: string;
   avatar_config: AvatarConfig | null;
   is_private: boolean;
+  companion_type: string | null;
   onboarded: boolean;
 }
 
@@ -62,6 +63,7 @@ export function publicUser(u: UserRow) {
     avatarEmoji: u.avatar_emoji,
     avatar: u.avatar_config ?? DEFAULT_AVATAR,
     isPrivate: u.is_private,
+    companionType: u.companion_type ?? 'plant',
     onboarded: u.onboarded,
   };
 }

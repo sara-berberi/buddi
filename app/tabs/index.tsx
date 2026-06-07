@@ -9,15 +9,16 @@ import TonightScreen from '../../components/screens/TonightScreen';
 import ProfileScreen from '../../components/screens/ProfileScreen';
 import { colors, fonts } from '../../lib/constants';
 import { TAB_BAR_HEIGHT } from '../../components/nav/tabBarMetrics';
+import { Icon, type IconName } from '../../components/ui/Icon';
 
 type RouteKey = 'feed' | 'daily' | 'garden' | 'tonight' | 'profile';
 
-const ROUTES: { key: RouteKey; title: string; glyph: string; center?: boolean }[] = [
-  { key: 'feed', title: 'Feed', glyph: '🏠' },
-  { key: 'daily', title: 'Daily', glyph: '✶' },
-  { key: 'tonight', title: 'Tonight', glyph: '✦', center: true },
-  { key: 'garden', title: 'Garden', glyph: '🌿' },
-  { key: 'profile', title: 'Profile', glyph: '◍' },
+const ROUTES: { key: RouteKey; title: string; icon: IconName; center?: boolean }[] = [
+  { key: 'feed', title: 'Feed', icon: 'home' },
+  { key: 'daily', title: 'Daily', icon: 'daily' },
+  { key: 'tonight', title: 'Tonight', icon: 'tonight', center: true },
+  { key: 'garden', title: 'Garden', icon: 'garden' },
+  { key: 'profile', title: 'Profile', icon: 'profile' },
 ];
 
 const SCENES: Record<RouteKey, React.ComponentType> = {
@@ -78,7 +79,7 @@ function BottomBar({
           return (
             <Pressable key={r.key} style={styles.centerWrap} onPress={() => onSelect(i)}>
               <View style={[styles.centerButton, { opacity: active ? 1 : 0.9 }]}>
-                <Text style={styles.centerGlyph}>{r.glyph}</Text>
+                <Icon name={r.icon} size={24} color={colors.white} filled />
               </View>
               <Text style={[styles.label, active && styles.labelActive]}>{r.title}</Text>
             </Pressable>
@@ -86,7 +87,7 @@ function BottomBar({
         }
         return (
           <Pressable key={r.key} style={styles.item} onPress={() => onSelect(i)} hitSlop={6}>
-            <Text style={[styles.glyph, { opacity: active ? 1 : 0.45 }]}>{r.glyph}</Text>
+            <Icon name={r.icon} size={24} color={active ? colors.forest : colors.muted} />
             <Text style={[styles.label, active && styles.labelActive]}>{r.title}</Text>
           </Pressable>
         );

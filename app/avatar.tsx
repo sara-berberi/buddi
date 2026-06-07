@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PersonAvatar } from '../components/avatar/PersonAvatar';
+import { Icon } from '../components/ui/Icon';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import { useUpdateProfile } from '../hooks/useProfile';
@@ -54,7 +55,8 @@ export default function AvatarEditor() {
       </View>
 
       <Pressable onPress={() => setCfg(randomAvatar())} style={styles.shuffle}>
-        <Text style={styles.shuffleText}>🎲  Surprise me</Text>
+        <Icon name="dice" size={18} color={colors.ink} />
+        <Text style={styles.shuffleText}>Surprise me</Text>
       </Pressable>
 
       <Section label="Skin tone">
@@ -155,7 +157,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.lg },
   title: { fontFamily: fonts.headerItalic, fontSize: 30, color: colors.ink, textAlign: 'center' },
   preview: { alignItems: 'center', marginTop: spacing.lg },
-  shuffle: { alignSelf: 'center', marginTop: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+  shuffle: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, alignSelf: 'center', marginTop: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
   shuffleText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.ink },
   section: { marginTop: spacing.lg },
   sectionLabel: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.muted, marginBottom: spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 },

@@ -5,6 +5,8 @@ import { useDailyHistory } from '../../hooks/useDaily';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import { PersonAvatar } from '../avatar/PersonAvatar';
+import { CompanionPicker } from '../plants/CompanionPicker';
+import { Icon } from '../ui/Icon';
 import { Button } from '../ui/Button';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { formatTimestamp } from '../../lib/utils';
@@ -30,6 +32,7 @@ export default function ProfileScreen() {
   // Prefer the live auth user's avatar so edits reflect instantly.
   const avatar = authUser?.avatar ?? user.avatar;
   const isPrivate = authUser?.isPrivate ?? user.isPrivate;
+  const companionType = authUser?.companionType ?? user.companionType ?? 'plant';
 
   return (
     <ScrollView
@@ -43,7 +46,7 @@ export default function ProfileScreen() {
         <Pressable onPress={() => router.push('/avatar')} style={styles.avatarWrap}>
           <PersonAvatar config={avatar} size={104} ring />
           <View style={styles.editPip}>
-            <Text style={styles.editPipText}>✎</Text>
+            <Icon name="edit" size={15} color={colors.white} />
           </View>
         </Pressable>
         <Text style={styles.name}>{user.displayName}</Text>
@@ -76,10 +79,22 @@ export default function ProfileScreen() {
         style={{ marginBottom: spacing.lg }}
       />
 
+      {/* Companion type */}
+      <Text style={styles.sectionLabel}>Your garden style</Text>
+      <View style={{ marginBottom: spacing.lg }}>
+        <CompanionPicker
+          value={companionType}
+          onChange={(t) => update.mutate({ companionType: t })}
+        />
+      </View>
+
       {/* Privacy */}
       <View style={styles.privacyRow}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.privacyTitle}>{isPrivate ? '🔒 Private account' : '🌍 Public account'}</Text>
+          <View style={styles.privacyTitleRow}>
+            {isPrivate && <Icon name="lock" size={15} color={colors.ink} />}
+            <Text style={styles.privacyTitle}>{isPrivate ? 'Private account' : 'Public account'}</Text>
+          </View>
           <Text style={styles.privacySub}>
             {isPrivate
               ? 'Follows need your approval before they can see you.'
@@ -158,6 +173,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     gap: spacing.md,
   },
+  privacyTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   privacyTitle: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.ink },
   privacySub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted, marginTop: 2 },
   sectionLabel: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.muted, marginBottom: spacing.md },

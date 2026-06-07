@@ -14,6 +14,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMessages, useSendMessage } from '../../hooks/useDM';
 import { useAuth } from '../../hooks/useAuth';
+import { Icon } from '../../components/ui/Icon';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { CATEGORY_LABEL } from '../../lib/utils';
 import type { DmMessage } from '../../types';
@@ -80,7 +81,7 @@ export default function DmThread() {
           onSubmitEditing={submit}
         />
         <Pressable onPress={submit} style={[styles.sendBtn, !draft.trim() && { opacity: 0.4 }]} disabled={!draft.trim()}>
-          <Text style={styles.sendGlyph}>➤</Text>
+          <Icon name="send" size={20} color={colors.white} filled />
         </Pressable>
       </View>
     </KeyboardAvoidingView>
@@ -105,7 +106,10 @@ function Bubble({
 
         {message.share?.kind === 'venue' && (
           <Pressable style={styles.shareCard} onPress={() => onOpenVenue(message.share!.kind === 'venue' ? message.share!.venueId : '')}>
-            <Text style={styles.shareKicker}>✦ Let’s go</Text>
+            <View style={styles.shareKickerRow}>
+              <Icon name="tonight" size={12} color={colors.amber} filled />
+              <Text style={styles.shareKicker}>Let’s go</Text>
+            </View>
             <Text style={styles.shareTitle}>{message.share.venueName}</Text>
             <Text style={styles.shareMeta}>
               {message.share.neighborhood} · {CATEGORY_LABEL[message.share.category] ?? message.share.category}
@@ -116,7 +120,10 @@ function Bubble({
 
         {message.share?.kind === 'post' && (
           <View style={styles.shareCard}>
-            <Text style={styles.shareKicker}>🔗 Shared post</Text>
+            <View style={styles.shareKickerRow}>
+              <Icon name="link" size={12} color={colors.amber} />
+              <Text style={styles.shareKicker}>Shared post</Text>
+            </View>
             {message.share.postAuthor ? <Text style={styles.shareTitle}>{message.share.postAuthor}</Text> : null}
             <Text style={styles.shareMeta} numberOfLines={3}>{message.share.postBody}</Text>
           </View>
@@ -144,6 +151,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     minWidth: 200,
   },
+  shareKickerRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   shareKicker: { fontFamily: fonts.mono, fontSize: 10, color: colors.amber, textTransform: 'uppercase', letterSpacing: 0.5 },
   shareTitle: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.ink, marginTop: 2 },
   shareMeta: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, marginTop: 2 },

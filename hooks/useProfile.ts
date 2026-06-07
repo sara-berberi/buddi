@@ -13,6 +13,7 @@ type ProfilePatch = Partial<{
   city: string;
   avatar: AvatarConfig;
   isPrivate: boolean;
+  companionType: 'plant' | 'creature';
 }>;
 
 export function useUpdateProfile() {

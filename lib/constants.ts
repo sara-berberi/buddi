@@ -25,13 +25,17 @@ export const healthColors = {
   critical: '#C44A3A',
 } as const;
 
+// Fredoka (rounded geometric sans) is loaded at startup in app/_layout.tsx and
+// gives the app its cute, Manima-like personality. Falls back to system fonts
+// until loaded. The serif/mono keys are kept so older styles still resolve.
 export const fonts = {
-  // Headers → Fraunces italic (serif); Body → Instrument Sans; Numbers → DM Mono.
-  header: 'Fraunces',
-  headerItalic: 'Fraunces-Italic',
-  body: 'InstrumentSans',
-  bodyMedium: 'InstrumentSans-Medium',
-  mono: 'DMMono',
+  display: 'Fredoka_600SemiBold', // big playful headers
+  displayBold: 'Fredoka_700Bold',
+  header: 'Fredoka_600SemiBold',
+  headerItalic: 'Fredoka_600SemiBold',
+  body: 'Fredoka_400Regular',
+  bodyMedium: 'Fredoka_500Medium',
+  mono: 'Fredoka_500Medium',
 } as const;
 
 export const spacing = {

@@ -31,6 +31,7 @@ export interface User {
   avatar: AvatarConfig;
   isPrivate: boolean;
   companionType: CompanionType;
+  emailVerified: boolean;
   onboarded: boolean;
 }
 

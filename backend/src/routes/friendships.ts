@@ -142,6 +142,31 @@ friendshipsRouter.get(
   })
 );
 
+// GET /friendships/search?q= — search only among accepted friends ----------
+// Used by the composer's @mention autocomplete (friends-only).
+friendshipsRouter.get(
+  '/search',
+  asyncHandler(async (req, res) => {
+    const me = req.userId!;
+    const q = String(req.query.q ?? '').trim();
+    const rows = await query<FriendshipRow>(
+      `${SELECT_FRIENDSHIPS} AND f.status = 'accepted'
+        AND ($2 = '' OR lower(u.username) LIKE lower($2) OR lower(u.display_name) LIKE lower($2))
+       ORDER BY u.display_name
+       LIMIT 8`,
+      [me, q ? `%${q}%` : '']
+    );
+    res.json({
+      friends: rows.map((r) => ({
+        id: r.friend_id,
+        username: r.friend_username,
+        displayName: r.friend_display_name,
+        avatar: r.friend_avatar_config ?? DEFAULT_AVATAR,
+      })),
+    });
+  })
+);
+
 // GET /friendships/:id -----------------------------------------------------
 friendshipsRouter.get(
   '/:id',

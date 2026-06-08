@@ -9,6 +9,8 @@ import { dailyRouter } from './routes/daily.js';
 import { questsRouter } from './routes/quests.js';
 import { postsRouter } from './routes/posts.js';
 import { dmRouter } from './routes/dm.js';
+import { accountRouter } from './routes/account.js';
+import { coinsRouter } from './routes/coins.js';
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.use('/daily', dailyRouter);
 app.use('/quests', questsRouter);
 app.use('/posts', postsRouter);
 app.use('/dm', dmRouter);
+app.use('/account', accountRouter);
+app.use('/coins', coinsRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });

@@ -46,7 +46,8 @@ function Option({
 }) {
   return (
     <Pressable onPress={onPress} style={[styles.card, selected && styles.cardSelected]}>
-      <View style={styles.preview}>{preview}</View>
+      {/* pointerEvents none so the animated SVG doesn't swallow the tap on web */}
+      <View style={styles.preview} pointerEvents="none">{preview}</View>
       <Text style={[styles.title, selected && { color: colors.forest }]}>{title}</Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
     </Pressable>

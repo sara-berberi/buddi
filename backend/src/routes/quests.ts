@@ -3,6 +3,7 @@ import { query, queryOne, execute } from '../db/client.js';
 import { asyncHandler, notFound, badRequest } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
 import { ensureThread, areFriends } from '../lib/friends.js';
+import { adjustCoins, QUEST_REWARD } from '../lib/coins.js';
 
 export const questsRouter = Router();
 questsRouter.use(requireAuth);
@@ -17,9 +18,11 @@ interface VenueRow {
   description: string | null;
   photo_url: string | null;
   featured: boolean;
+  unlock_cost: number;
 }
 
-function shapeVenue(v: VenueRow) {
+function shapeVenue(v: VenueRow, unlocked: Set<string>) {
+  const locked = v.unlock_cost > 0 && !unlocked.has(v.id);
   return {
     id: v.id,
     name: v.name,
@@ -30,7 +33,18 @@ function shapeVenue(v: VenueRow) {
     description: v.description,
     photoUrl: v.photo_url,
     featured: v.featured,
+    unlockCost: v.unlock_cost,
+    locked,
   };
+}
+
+/** Set of venue ids this user has unlocked. */
+async function unlockedSet(userId: string): Promise<Set<string>> {
+  const rows = await query<{ venue_id: string }>(
+    `SELECT venue_id FROM venue_unlocks WHERE user_id = $1`,
+    [userId]
+  );
+  return new Set(rows.map((r) => r.venue_id));
 }
 
 const TIME_BY_CATEGORY: Record<string, string> = {
@@ -52,9 +66,9 @@ async function topicsForCategory(category: string): Promise<string[]> {
   return rows.map((r) => r.topic);
 }
 
-async function buildQuestCard(v: VenueRow) {
+async function buildQuestCard(v: VenueRow, unlocked: Set<string>) {
   return {
-    venue: shapeVenue(v),
+    venue: shapeVenue(v, unlocked),
     suggestedTime: TIME_BY_CATEGORY[v.category] ?? 'Tonight, 7:00 PM',
     topics: await topicsForCategory(v.category),
   };
@@ -80,7 +94,8 @@ questsRouter.get(
       [city, category]
     );
 
-    const cards = await Promise.all(venues.map(buildQuestCard));
+    const unlocked = await unlockedSet(me);
+    const cards = await Promise.all(venues.map((v) => buildQuestCard(v, unlocked)));
     res.json({ city, quests: cards });
   })
 );
@@ -114,7 +129,8 @@ questsRouter.get(
       [city]
     );
 
-    const cards = await Promise.all(venues.map(buildQuestCard));
+    const unlocked = await unlockedSet(me);
+    const cards = await Promise.all(venues.map((v) => buildQuestCard(v, unlocked)));
     res.json({ friendshipId: req.params.id, quests: cards });
   })
 );
@@ -129,7 +145,8 @@ questsRouter.get(
       [req.params.id]
     );
     if (!venue) throw notFound('Venue not found');
-    res.json({ quest: await buildQuestCard(venue) });
+    const unlocked = await unlockedSet(req.userId!);
+    res.json({ quest: await buildQuestCard(venue, unlocked) });
   })
 );
 
@@ -157,6 +174,8 @@ questsRouter.post(
       `SELECT id FROM friendships WHERE user_a_id = $1 AND user_b_id = $2 AND status = 'accepted'`,
       [lo, hi]
     );
+    let coinsAwarded = 0;
+    let balance: number | undefined;
     if (fr) {
       await execute(
         `INSERT INTO quests (venue_id, friendship_id, for_user_id, status)
@@ -168,9 +187,18 @@ questsRouter.post(
          VALUES ($1, $2, 'quest', 'Planning a quest')`,
         [fr.id, me]
       );
+      // Award buddis — but only once per (user, venue) so it can't be farmed.
+      const earned = await queryOne<{ id: string }>(
+        `SELECT id FROM coin_ledger WHERE user_id = $1 AND venue_id = $2 AND reason = 'quest_done' LIMIT 1`,
+        [me, venueId]
+      );
+      if (!earned) {
+        balance = await adjustCoins(me, QUEST_REWARD, 'quest_done', venueId);
+        coinsAwarded = QUEST_REWARD;
+      }
     }
 
     const threadId = await ensureThread(me, friendId);
-    res.json({ threadId, venueId });
+    res.json({ threadId, venueId, coinsAwarded, balance });
   })
 );

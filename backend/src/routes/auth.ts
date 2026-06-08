@@ -10,6 +10,7 @@ import {
 import { asyncHandler, badRequest, unauthorized, conflict } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
 import { publicUser, type UserRow as BaseUserRow } from '../lib/userShape.js';
+import { sendVerificationEmail } from './account.js';
 
 export const authRouter = Router();
 
@@ -52,6 +53,11 @@ authRouter.post(
       [username, email, passwordHash, displayName, city ?? null]
     );
     if (!user) throw badRequest('Could not create user');
+
+    // Fire-and-forget the verification email (soft verification — don't block).
+    sendVerificationEmail(user.id, user.email).catch((e) =>
+      console.error('[auth] verification email failed', e)
+    );
 
     const tokens = await issueTokens(user.id);
     res.status(201).json({ user: publicUser(user), ...tokens });

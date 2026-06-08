@@ -137,6 +137,27 @@ export const api = {
     return data.user;
   },
 
+  // ---- Account: verify + password reset -----------------------------------
+  async verifyEmail(token: string): Promise<void> {
+    await request('/account/verify', { method: 'POST', body: { token }, auth: false });
+  },
+
+  async resendVerification(): Promise<void> {
+    await request('/account/resend-verification', { method: 'POST' });
+  },
+
+  async forgotPassword(email: string): Promise<void> {
+    await request('/account/forgot-password', { method: 'POST', body: { email }, auth: false });
+  },
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    await request('/account/reset-password', {
+      method: 'POST',
+      body: { token, password },
+      auth: false,
+    });
+  },
+
   async submitOnboarding(
     answers: { questionKey: string; answer: string }[]
   ): Promise<User> {

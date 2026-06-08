@@ -41,11 +41,29 @@ usersRouter.get(
 usersRouter.patch(
   '/me',
   asyncHandler(async (req, res) => {
-    const { displayName, bio, city, avatar, isPrivate, companionType } = req.body ?? {};
+    const { displayName, bio, city, avatar, isPrivate, companionType, username, hideLocation } =
+      req.body ?? {};
     const fields: string[] = [];
     const values: unknown[] = [];
     let i = 1;
 
+    if (username !== undefined) {
+      const uname = String(username).trim();
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(uname)) {
+        throw badRequest('Username must be 3–20 letters, numbers, or underscores');
+      }
+      const taken = await queryOne<{ id: string }>(
+        `SELECT id FROM users WHERE lower(username) = lower($1) AND id <> $2`,
+        [uname, req.userId]
+      );
+      if (taken) throw badRequest('That username is taken');
+      fields.push(`username = $${i++}`);
+      values.push(uname);
+    }
+    if (hideLocation !== undefined) {
+      fields.push(`hide_location = $${i++}`);
+      values.push(Boolean(hideLocation));
+    }
     if (displayName !== undefined) {
       if (!String(displayName).trim()) throw badRequest('displayName cannot be empty');
       fields.push(`display_name = $${i++}`);

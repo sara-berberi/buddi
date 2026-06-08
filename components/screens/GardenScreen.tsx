@@ -197,7 +197,9 @@ function PlantTile({
 }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tile, pressed && { opacity: 0.85 }]}>
-      <Companion type={companionType} health={friendship.health} stemColor={friendship.stemColor} size={104} />
+      <View pointerEvents="none">
+        <Companion type={companionType} health={friendship.health} stemColor={friendship.stemColor} size={104} />
+      </View>
       <Text style={styles.tileName} numberOfLines={1}>
         {friendship.friend.displayName}
       </Text>

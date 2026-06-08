@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import { useFeed, useCreatePost, useToggleLike, useRepost } from '../../hooks/useFeed';
 import { useFriendships } from '../../hooks/useFriendships';
+import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
 import { PostCard } from '../social/PostCard';
 import { BlobMascot } from '../brand/BlobMascot';
@@ -29,6 +30,7 @@ const APP_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   const feed = useFeed();
   const friends = useFriendships();
   const createPost = useCreatePost();
@@ -38,6 +40,16 @@ export default function FeedScreen() {
   const [draft, setDraft] = useState('');
   const [toast, setToast] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
+  const [verifyHidden, setVerifyHidden] = useState(false);
+
+  async function resendVerify() {
+    try {
+      await api.resendVerification();
+      flash('Verification sent ✉️');
+    } catch {
+      flash('Could not resend');
+    }
+  }
 
   function flash(msg: string) {
     setToast(msg);
@@ -78,6 +90,21 @@ export default function FeedScreen() {
           <Icon name="mail" size={20} color={colors.forest} />
         </Pressable>
       </View>
+
+      {/* Soft email-verification banner */}
+      {user && !user.emailVerified && !verifyHidden && (
+        <View style={styles.verifyBanner}>
+          <Text style={styles.verifyText}>Verify your email to secure your account.</Text>
+          <View style={styles.verifyActions}>
+            <Pressable onPress={resendVerify} hitSlop={6}>
+              <Text style={styles.verifyResend}>Resend</Text>
+            </Pressable>
+            <Pressable onPress={() => setVerifyHidden(true)} hitSlop={6}>
+              <Icon name="close" size={14} color={colors.forest} />
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       <ScrollView
         contentContainerStyle={[styles.content, { paddingBottom: TAB_BAR_SPACE + insets.bottom }]}
@@ -180,6 +207,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dmGlyph: { fontSize: 18 },
+  verifyBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+    backgroundColor: '#FBEFD8',
+    borderWidth: 1,
+    borderColor: colors.amber,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  verifyText: { flex: 1, fontFamily: fonts.body, fontSize: 13, color: '#7A5418' },
+  verifyActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  verifyResend: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.amber },
   content: { paddingHorizontal: spacing.lg },
   composer: {
     backgroundColor: colors.surface,

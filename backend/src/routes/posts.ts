@@ -11,7 +11,7 @@ postsRouter.use(requireAuth);
 // A flattened post row (author + optional original-author for reposts) plus
 // like/repost counts and whether the current user liked it.
 const POST_SELECT = `
-  SELECT p.id, p.body, p.created_at, p.repost_of,
+  SELECT p.id, p.body, p.created_at, p.updated_at, p.repost_of,
          a.id AS author_id, a.username AS author_username,
          a.display_name AS author_name, a.avatar_config AS author_avatar,
          o.id AS orig_id, o.body AS orig_body, o.created_at AS orig_created_at,
@@ -30,6 +30,7 @@ interface PostRow {
   id: string;
   body: string | null;
   created_at: string;
+  updated_at: string | null;
   repost_of: string | null;
   author_id: string;
   author_username: string;
@@ -52,6 +53,7 @@ function shapePost(r: PostRow) {
     id: r.id,
     body: r.body,
     createdAt: r.created_at,
+    editedAt: r.updated_at,
     likeCount: r.like_count,
     repostCount: r.repost_count,
     likedByMe: r.liked_by_me,
@@ -207,5 +209,45 @@ postsRouter.post(
     );
     const row = await queryOne<PostRow>(`${POST_SELECT} WHERE p.id = $2`, [me, created!.id]);
     res.status(201).json({ post: shapePost(row!) });
+  })
+);
+
+// PATCH /posts/:id  { body } — edit your own status (not reposts) -----------
+postsRouter.patch(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const me = req.userId!;
+    const body = String(req.body?.body ?? '').trim();
+    if (!body) throw badRequest('body is required');
+    if (body.length > 500) throw badRequest('Status must be 500 characters or fewer');
+
+    const post = await queryOne<{ author_id: string; repost_of: string | null }>(
+      `SELECT author_id, repost_of FROM posts WHERE id = $1`,
+      [req.params.id]
+    );
+    if (!post || post.author_id !== me) throw notFound('Post not found');
+    if (post.repost_of) throw badRequest('Reposts cannot be edited');
+
+    await execute(`UPDATE posts SET body = $2, updated_at = now() WHERE id = $1`, [
+      req.params.id,
+      body,
+    ]);
+    const row = await queryOne<PostRow>(`${POST_SELECT} WHERE p.id = $2`, [me, req.params.id]);
+    res.json({ post: shapePost(row!) });
+  })
+);
+
+// DELETE /posts/:id — delete your own post ----------------------------------
+postsRouter.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
+    const me = req.userId!;
+    const post = await queryOne<{ author_id: string }>(
+      `SELECT author_id FROM posts WHERE id = $1`,
+      [req.params.id]
+    );
+    if (!post || post.author_id !== me) throw notFound('Post not found');
+    await execute(`DELETE FROM posts WHERE id = $1`, [req.params.id]);
+    res.json({ ok: true });
   })
 );

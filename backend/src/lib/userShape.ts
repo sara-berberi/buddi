@@ -12,6 +12,9 @@ export interface UserRow {
   avatar_config: AvatarConfig | null;
   is_private: boolean;
   companion_type: string | null;
+  email_verified: boolean;
+  hide_location: boolean;
+  coins: number;
   onboarded: boolean;
 }
 
@@ -64,17 +67,21 @@ export function publicUser(u: UserRow) {
     avatar: u.avatar_config ?? DEFAULT_AVATAR,
     isPrivate: u.is_private,
     companionType: u.companion_type ?? 'plant',
+    emailVerified: u.email_verified ?? false,
+    hideLocation: u.hide_location ?? false,
+    coins: u.coins ?? 0,
     onboarded: u.onboarded,
   };
 }
 
-/** Lightweight shape for search/suggestions/friends lists (no email). */
+/** Lightweight shape for search/suggestions/friends lists (no email).
+ *  Respects hide_location: city becomes null when the user opts out. */
 export function userCard(u: Partial<UserRow> & { id: string }) {
   return {
     id: u.id,
     username: u.username,
     displayName: u.display_name,
-    city: u.city,
+    city: u.hide_location ? null : u.city ?? null,
     avatarEmoji: u.avatar_emoji,
     avatar: u.avatar_config ?? DEFAULT_AVATAR,
     isPrivate: u.is_private ?? false,

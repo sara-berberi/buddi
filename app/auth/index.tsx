@@ -9,14 +9,17 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
+import { BlobMascot } from '../../components/brand/BlobMascot';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 
 type Mode = 'splash' | 'login' | 'register';
 
 export default function SplashScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { login, register } = useAuth();
   const [mode, setMode] = useState<Mode>('splash');
   const [loading, setLoading] = useState(false);
@@ -55,7 +58,8 @@ export default function SplashScreen() {
     return (
       <View style={[styles.splash, { paddingTop: insets.top }]}>
         <View style={styles.splashCenter}>
-          <Text style={styles.logo}>Buddi</Text>
+          <BlobMascot size={120} mood="happy" color={colors.bubble} />
+          <Text style={styles.logo}>buddi</Text>
           <Text style={styles.tagline}>Tend the friendships you already have.</Text>
         </View>
         <View style={[styles.splashActions, { paddingBottom: insets.bottom + spacing.lg }]}>
@@ -116,6 +120,14 @@ export default function SplashScreen() {
           }}
           style={{ marginTop: spacing.sm }}
         />
+        {mode === 'login' && (
+          <Button
+            label="Forgot password?"
+            variant="ghost"
+            onPress={() => router.push('/auth/forgot')}
+            style={{ marginTop: spacing.xs }}
+          />
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

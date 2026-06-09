@@ -34,9 +34,9 @@ export default function PostDetail() {
     >
       <PostCard
         post={post}
+        currentUserId={undefined}
         onLike={() => like.mutate({ id: post.id, liked: post.likedByMe })}
         onRepost={() => repost.mutate(post.id)}
-        onShareLink={() => {}}
         onShareDM={() => router.push('/dm')}
       />
     </ScrollView>

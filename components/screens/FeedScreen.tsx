@@ -7,25 +7,22 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Clipboard from 'expo-clipboard';
-import { useFeed, useCreatePost, useToggleLike, useRepost } from '../../hooks/useFeed';
+import { useFeed, useCreatePost, useToggleLike, useRepost, useEditPost, useDeletePost } from '../../hooks/useFeed';
 import { useFriendships } from '../../hooks/useFriendships';
 import { useAuth } from '../../hooks/useAuth';
 import { api } from '../../lib/api';
 import { PostCard } from '../social/PostCard';
+import { MentionInput } from '../social/MentionInput';
 import { BlobMascot } from '../brand/BlobMascot';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { Button } from '../ui/Button';
 import { colors, fonts, radius, spacing } from '../../lib/constants';
 import { TAB_BAR_SPACE } from '../nav/tabBarMetrics';
-
-const APP_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export default function FeedScreen() {
   const insets = useSafeAreaInsets();
@@ -36,11 +33,22 @@ export default function FeedScreen() {
   const createPost = useCreatePost();
   const like = useToggleLike();
   const repost = useRepost();
+  const editPost = useEditPost();
+  const deletePost = useDeletePost();
 
   const [draft, setDraft] = useState('');
   const [toast, setToast] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
   const [verifyHidden, setVerifyHidden] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState('');
+
+  async function saveEdit() {
+    if (!editId || !editDraft.trim()) return;
+    await editPost.mutateAsync({ id: editId, body: editDraft.trim() });
+    setEditId(null);
+    flash('Updated ✏️');
+  }
 
   async function resendVerify() {
     try {
@@ -61,12 +69,6 @@ export default function FeedScreen() {
     await createPost.mutateAsync(draft.trim());
     setDraft('');
     flash('Posted! 🎉');
-  }
-
-  async function shareLink(postId: string) {
-    const link = `${APP_URL}/post/${postId}`;
-    await Clipboard.setStringAsync(link);
-    flash('Link copied 🔗');
   }
 
   async function sendToFriend(friendId: string) {
@@ -112,14 +114,11 @@ export default function FeedScreen() {
       >
         {/* Composer */}
         <View style={styles.composer}>
-          <TextInput
-            style={styles.input}
+          <MentionInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="What's on your mind?"
-            placeholderTextColor={colors.muted}
-            multiline
-            maxLength={500}
+            placeholder="What's on your mind? Use @ to mention a friend"
+            minHeight={56}
           />
           <View style={styles.composerRow}>
             <Text style={styles.counter}>{draft.length}/500</Text>
@@ -146,10 +145,15 @@ export default function FeedScreen() {
             <PostCard
               key={p.id}
               post={p}
+              currentUserId={user?.id}
               onLike={() => like.mutate({ id: p.id, liked: p.likedByMe })}
               onRepost={() => repost.mutate(p.id)}
-              onShareLink={() => shareLink(p.repostOf?.id ?? p.id)}
               onShareDM={() => setSharePostId(p.repostOf?.id ?? p.id)}
+              onEdit={() => {
+                setEditId(p.id);
+                setEditDraft(p.body ?? '');
+              }}
+              onDelete={() => deletePost.mutate(p.id)}
             />
           ))
         )}
@@ -179,6 +183,18 @@ export default function FeedScreen() {
               )}
             </ScrollView>
             <Button label="Cancel" variant="ghost" onPress={() => setSharePostId(null)} style={{ marginTop: spacing.sm }} />
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Edit a status */}
+      <Modal visible={Boolean(editId)} transparent animationType="slide" onRequestClose={() => setEditId(null)}>
+        <Pressable style={styles.backdrop} onPress={() => setEditId(null)}>
+          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.sheetTitle}>Edit status</Text>
+            <MentionInput value={editDraft} onChangeText={setEditDraft} placeholder="Update your status" minHeight={80} />
+            <Button label="Save" variant="accent" loading={editPost.isPending} disabled={!editDraft.trim()} onPress={saveEdit} style={{ marginTop: spacing.md }} />
+            <Button label="Cancel" variant="ghost" onPress={() => setEditId(null)} style={{ marginTop: spacing.sm }} />
           </Pressable>
         </Pressable>
       </Modal>

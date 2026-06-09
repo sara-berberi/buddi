@@ -31,9 +31,17 @@ export default function DmInbox() {
             style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}
             onPress={() => router.push(`/dm/${t.id}`)}
           >
-            <Avatar avatar={t.friend.avatar} size={50} />
+            {t.isGroup ? (
+              <View style={styles.groupAvatar}>
+                <Text style={styles.groupAvatarText}>{(t.title?.[0] ?? 'G').toUpperCase()}</Text>
+              </View>
+            ) : (
+              <Avatar avatar={t.friend?.avatar} size={50} />
+            )}
             <View style={styles.info}>
-              <Text style={styles.name}>{t.friend.displayName}</Text>
+              <Text style={styles.name}>
+                {t.isGroup ? `${t.title} · ${t.memberCount}` : t.friend?.displayName}
+              </Text>
               <Text style={styles.preview} numberOfLines={1}>{t.preview}</Text>
             </View>
             {t.lastMessageAt && <Text style={styles.time}>{formatTimestamp(t.lastMessageAt)}</Text>}
@@ -57,6 +65,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.sm,
   },
+  groupAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: colors.forest, alignItems: 'center', justifyContent: 'center' },
+  groupAvatarText: { fontFamily: fonts.displayBold, fontSize: 20, color: colors.cream },
   info: { flex: 1, marginLeft: spacing.sm },
   name: { fontFamily: fonts.bodyMedium, fontSize: 16, color: colors.ink },
   preview: { fontFamily: fonts.body, fontSize: 14, color: colors.muted, marginTop: 1 },

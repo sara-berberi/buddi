@@ -43,3 +43,19 @@ export function useRepost() {
     onSuccess: () => qc.invalidateQueries({ queryKey: feedKeys.feed }),
   });
 }
+
+export function useEditPost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: string }) => api.editPost(id, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: feedKeys.feed }),
+  });
+}
+
+export function useDeletePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.deletePost(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: feedKeys.feed }),
+  });
+}

@@ -8,6 +8,7 @@ import {
 import type {
   AuthResponse,
   AvatarConfig,
+  CoinLedgerItem,
   DailyAnswer,
   DailyToday,
   DmMessage,
@@ -18,6 +19,7 @@ import type {
   QuestCard,
   ShareInput,
   SuggestedUser,
+  ThreadInfo,
   User,
   UserCard,
   VenueCategory,
@@ -181,6 +183,8 @@ export const api = {
       avatar: AvatarConfig;
       isPrivate: boolean;
       companionType: 'plant' | 'creature';
+      username: string;
+      hideLocation: boolean;
     }>
   ) {
     const data = await request<{ user: User }>('/users/me', { method: 'PATCH', body: patch });
@@ -293,6 +297,48 @@ export const api = {
   async repost(id: string): Promise<Post> {
     const data = await request<{ post: Post }>(`/posts/${id}/repost`, { method: 'POST' });
     return data.post;
+  },
+
+  async editPost(id: string, body: string): Promise<Post> {
+    const data = await request<{ post: Post }>(`/posts/${id}`, { method: 'PATCH', body: { body } });
+    return data.post;
+  },
+
+  async deletePost(id: string): Promise<void> {
+    await request(`/posts/${id}`, { method: 'DELETE' });
+  },
+
+  async searchFriends(q: string): Promise<UserCard[]> {
+    const data = await request<{ friends: UserCard[] }>(
+      `/friendships/search?q=${encodeURIComponent(q)}`
+    );
+    return data.friends;
+  },
+
+  // ---- Coins (buddis) -----------------------------------------------------
+  async getCoins(): Promise<{ balance: number; ledger: CoinLedgerItem[] }> {
+    return request('/coins');
+  },
+
+  async unlockVenue(venueId: string): Promise<{ balance: number; unlocked: boolean }> {
+    return request('/coins/unlock', { method: 'POST', body: { venueId } });
+  },
+
+  // ---- Groups -------------------------------------------------------------
+  async createGroup(title: string, memberIds: string[]): Promise<string> {
+    const data = await request<{ threadId: string }>('/dm/group', {
+      method: 'POST',
+      body: { title, memberIds },
+    });
+    return data.threadId;
+  },
+
+  async getThreadInfo(threadId: string): Promise<ThreadInfo> {
+    return request(`/dm/${threadId}/info`);
+  },
+
+  async addGroupMembers(threadId: string, memberIds: string[]): Promise<void> {
+    await request(`/dm/${threadId}/members`, { method: 'POST', body: { memberIds } });
   },
 
   // ---- DM -----------------------------------------------------------------

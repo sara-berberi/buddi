@@ -1,5 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, View } from 'react-native';
 import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
-import { View } from 'react-native';
 import { colors } from '../../lib/constants';
 
 type Mood = 'happy' | 'wink' | 'sleepy' | 'excited';
@@ -8,30 +9,70 @@ interface Props {
   size?: number;
   color?: string; // blob body color
   mood?: Mood;
+  animated?: boolean; // idle bounce + blink (default on)
 }
 
 // A friendly googly-eyed blob, in the spirit of the reference branding.
-// Used as the app mascot in headers, empty states, and the feed composer.
-export function BlobMascot({ size = 96, color = colors.bubble, mood = 'happy' }: Props) {
+// Idle-animated (gentle bounce + occasional blink) so the app feels alive.
+export function BlobMascot({ size = 96, color = colors.bubble, mood = 'happy', animated = true }: Props) {
+  const bounce = useRef(new Animated.Value(0)).current;
+  const [blinking, setBlinking] = useState(false);
+
+  useEffect(() => {
+    if (!animated) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounce, { toValue: 1, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(bounce, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [animated, bounce]);
+
+  useEffect(() => {
+    if (!animated || mood === 'sleepy' || mood === 'wink') return;
+    let alive = true;
+    const schedule = () => {
+      const next = 2200 + Math.random() * 2600;
+      return setTimeout(() => {
+        if (!alive) return;
+        setBlinking(true);
+        setTimeout(() => alive && setBlinking(false), 130);
+        timer = schedule();
+      }, next);
+    };
+    let timer = schedule();
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [animated, mood]);
+
+  const translateY = bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -4] });
+  const effectiveMood: Mood = blinking ? 'sleepy' : mood;
+
   return (
     <View style={{ width: size, height: size }}>
-      <Svg width={size} height={size} viewBox="0 0 100 100">
-        {/* soft shadow */}
-        <Ellipse cx="50" cy="92" rx="30" ry="5" fill="rgba(0,0,0,0.06)" />
+      <Animated.View style={{ transform: [{ translateY }] }}>
+        <Svg width={size} height={size} viewBox="0 0 100 100">
+          {/* soft shadow */}
+          <Ellipse cx="50" cy="92" rx="30" ry="5" fill="rgba(0,0,0,0.06)" />
 
-        {/* blob body — a rounded dome with a slightly wobbly base */}
-        <Path
-          d="M50 14
-             C24 14 16 38 16 56
-             C16 78 30 90 50 90
-             C70 90 84 78 84 56
-             C84 38 76 14 50 14 Z"
-          fill={color}
-        />
+          {/* blob body — a rounded dome with a slightly wobbly base */}
+          <Path
+            d="M50 14
+               C24 14 16 38 16 56
+               C16 78 30 90 50 90
+               C70 90 84 78 84 56
+               C84 38 76 14 50 14 Z"
+            fill={color}
+          />
 
-        <Eyes mood={mood} />
-        <Mouth mood={mood} />
-      </Svg>
+          <Eyes mood={effectiveMood} />
+          <Mouth mood={mood} />
+        </Svg>
+      </Animated.View>
     </View>
   );
 }

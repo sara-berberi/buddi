@@ -32,6 +32,8 @@ export interface User {
   isPrivate: boolean;
   companionType: CompanionType;
   emailVerified: boolean;
+  hideLocation: boolean;
+  coins: number;
   onboarded: boolean;
 }
 
@@ -130,6 +132,8 @@ export interface Venue {
   description: string | null;
   photoUrl: string | null;
   featured: boolean;
+  unlockCost: number;
+  locked: boolean;
 }
 
 export interface QuestCard {
@@ -150,6 +154,7 @@ export interface Post {
   id: string;
   body: string | null;
   createdAt: string;
+  editedAt: string | null;
   likeCount: number;
   repostCount: number;
   likedByMe: boolean;
@@ -162,12 +167,28 @@ export interface Post {
   } | null;
 }
 
+export interface CoinLedgerItem {
+  delta: number;
+  reason: string;
+  venueName: string | null;
+  createdAt: string;
+}
+
 // ---- DM -------------------------------------------------------------------
 export interface DmThreadSummary {
   id: string;
+  isGroup: boolean;
+  title: string;
   lastMessageAt: string | null;
   preview: string;
-  friend: PostAuthor;
+  memberCount: number;
+  friend: PostAuthor | null;
+}
+
+export interface ThreadInfo {
+  isGroup: boolean;
+  title: string | null;
+  members: { id: string; username: string; displayName: string; avatar: AvatarConfig }[];
 }
 
 export type DmShare =
@@ -183,6 +204,8 @@ export type DmShare =
 export interface DmMessage {
   id: string;
   senderId: string;
+  senderName: string;
+  senderAvatar: AvatarConfig;
   body: string | null;
   createdAt: string;
   share: DmShare | null;

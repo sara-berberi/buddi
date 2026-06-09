@@ -1,11 +1,25 @@
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, View } from 'react-native';
 import Svg, { Circle, Ellipse, Path } from 'react-native-svg';
-import { View } from 'react-native';
 import { colors } from '../../lib/constants';
 
 // Two little buddies standing together — used in empty states for warmth.
+// Gently sways so empty states feel alive.
 export function BuddiesIcon({ size = 120 }: { size?: number }) {
+  const sway = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(sway, { toValue: 1, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(sway, { toValue: 0, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [sway]);
+  const translateY = sway.interpolate({ inputRange: [0, 1], outputRange: [0, -3] });
   return (
-    <View style={{ width: size, height: size }}>
+    <Animated.View style={{ width: size, height: size, transform: [{ translateY }] }}>
       <Svg width={size} height={size} viewBox="0 0 120 120">
         {/* ground shadow */}
         <Ellipse cx="60" cy="104" rx="40" ry="6" fill="rgba(0,0,0,0.06)" />
@@ -29,6 +43,6 @@ export function BuddiesIcon({ size = 120 }: { size?: number }) {
         {/* little connecting hearts */}
         <Path d="M60 78 l3 3 l3 -3 a2 2 0 0 0 -3 -2 a2 2 0 0 0 -3 2 Z" fill="#D65A7E" />
       </Svg>
-    </View>
+    </Animated.View>
   );
 }

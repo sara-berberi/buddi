@@ -41,7 +41,7 @@ Edit `eas.json` → `submit.production.ios`:
 You'll first need to **create the app record** in App Store Connect:
 App Store Connect → Apps → **+** → New App
 - Platform: iOS
-- Bundle ID: **com.buddi.app** (must match `app.json`)
+- Bundle ID: **com.buddiapp.app** (must match `app.json`)
 - SKU: `buddi`
 - Name: Buddi
 

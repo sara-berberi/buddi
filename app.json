@@ -13,7 +13,9 @@
       "backgroundColor": "#F4EDE0",
       "resizeMode": "contain"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.buddi.app",
@@ -48,6 +50,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d4d5745a-13d7-4833-ac88-db1e90a58417"
+      }
+    },
+    "owner": "sberberiiiii"
   }
 }
